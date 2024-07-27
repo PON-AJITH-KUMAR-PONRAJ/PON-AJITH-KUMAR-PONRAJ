@@ -1,5 +1,6 @@
 <h1 align="center">Hi 👋, I'm Pon Ajith Kumar P</h1>
-<h3 align="center">Curious coder and IT sophomore at Anna University, CEG | Fueling my curiosity with every line of code I write and every problem I solve.</h3>
+<h3 align="center">Curious coder and IT sophomore at Anna University, CEG</h3>
+  <h3 align="center">Fueling my curiosity with every line of code I write and every problem I solve.</h3>
 
 <p align="left"> <img src="https://komarev.com/ghpvc/?username=pon-ajith-kumar-ponraj&label=Profile%20views&color=0e75b6&style=flat" alt="pon-ajith-kumar-ponraj" /> </p>
 
@@ -15,7 +16,7 @@
 
 <h3 align="left">Connect with me:</h3>
 <p align="left">
-<a href="https://linkedin.com/in/pon-ajith-kumar-p" target="blank"><img align="center" src="https://raw.githubusercontent.com/rahuldkjain/github-profile-readme-generator/master/src/images/icons/Social/linked-in-alt.svg" alt="pon-ajith-kumar-p" height="30" width="40" /></a>
+<a href="https://linkedin.com/in/ponajithkumar2005" target="blank"><img align="center" src="https://raw.githubusercontent.com/rahuldkjain/github-profile-readme-generator/master/src/images/icons/Social/linked-in-alt.svg" alt="ponajithkumar2005" height="30" width="40" /></a>
 </p>
 
 <h3 align="left">Languages and Tools:</h3>
