@@ -2,7 +2,7 @@
     <img src="https://readme-typing-svg.herokuapp.com/?font=Righteous&size=35&center=true&vCenter=true&width=500&height=70&duration=4000&lines=Hi+There!+👋;+I'm+Pon+Ajith+Kumar!;" />
 </h1>
 
-<h3 align="center">Pon Ajith Kumar P</h3>
+<h1 align="center">Pon Ajith Kumar P</h1>
 <h3 align="center">IT Sophomore @ College of Engineering Guindy, Anna University</h3>
 <img align="right" width="370" height="290" src="https://i.pinimg.com/originals/47/f0/34/47f0342cec72b800463bf003eac1257e.gif">
 - 🌱 I’m currently learning <b>Full Stack Web Development</b>
