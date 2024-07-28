@@ -8,8 +8,12 @@
 - 👯 I’m looking to collaborate on <b>Front End Development Projects</b>
 - 💬 Ask me about <b>Web Development</b>
 - 📫 How to reach me :
-<br /> [<img src="https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white" />](https://www.linkedin.com/in/ponajithkumar2005/)
-
+<br> <a href="mailto:ponajithkumar05@gmail.com">
+    <img src="https://img.shields.io/badge/Gmail-333333?style=for-the-badge&logo=gmail&logoColor=red" />
+  </a>
+  <a href="https://linkedin.com/in/ponajithkumar2005" target="_blank">
+    <img src="https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white" target="_blank" />
+  </a>
 - 😄 Pronouns: He/Him
 
 ### I love to Code in
