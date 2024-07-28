@@ -1,25 +1,34 @@
-<h1 align="center">Hi 👋, I'm Pon Ajith Kumar P</h1>
-<h3 align="center">Curious coder and IT sophomore at Anna University, CEG</h3>
-<h3 align="center">Fueling my curiosity with every line of code I write and every problem I solve.</h3>
+## Hi there 👋 It's me Pon Ajith Kumar P
 
-<p align="left"> <img src="https://komarev.com/ghpvc/?username=pon-ajith-kumar-ponraj&label=Profile%20views&color=0e75b6&style=flat" alt="pon-ajith-kumar-ponraj" /> </p>
+IT Sophomore @ College of Engineering Guindy, Anna University
+<img align="right" width="370" height="290" src="https://i.pinimg.com/originals/47/f0/34/47f0342cec72b800463bf003eac1257e.gif">
+- 🌱 I’m currently learning <b>Full Stack Web Development</b>
+- 👯 I’m looking to collaborate on Front End Development
+- 💬 Ask me about Web Development
+- 📫 How to reach me :
+<br /> [<img src="https://img.shields.io/badge/Twitter-1DA1F2?style=for-the-badge&logo=twitter&logoColor=white" />](https://twitter.com/hareesh_dev) [<img src="https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white" />](https://www.linkedin.com/in/hareesh-r/)
+- 😄 Pronouns: He/Him
+- ⚡ Fun fact: I know Japanese.
 
-- 🌱 I’m currently learning **Full Stack Web Development**
+### I love Coding in
+<img height="50" width="50" src="https://img.icons8.com/color/48/000000/c-programming.png" /> 
+<img height="50" width="50" src="https://img.icons8.com/color/48/000000/c-plus-plus-logo.png" />  
+<img height="50" width="50" src="https://img.icons8.com/color/48/000000/python.png" /> 
 
-- 💬 Ask me about **Front End Web Development**
+### Web Development Skills
+<img height="50" width="50" src="https://img.icons8.com/color/48/000000/html-5.png" /> 
+<img height="50" width="50" src="https://img.icons8.com/color/48/000000/css3.png" /> 
+<img height="50" width="50" src="https://img.icons8.com/color/48/000000/javascript.png"/>
+<img height="50" width="50" src="https://img.icons8.com/color/48/000000/react-native.png"/> 
+<img height="50" width="50" src="https://img.icons8.com/color/48/000000/nodejs.png"/> 
 
-- 📫 How to reach me **ponajithkumar05@gmail.com**
+### IDE and Tools I Use
+<img height="50" width="50" src="https://img.icons8.com/color/48/000000/visual-studio-code-2019.png"/> 
+<img height="50" width="50" src="https://img.icons8.com/color/50/000000/git.png"/> 
 
-<h3 align="left">Connect with me:</h3>
-<p align="left">
-<a href="https://linkedin.com/in/ponajithkumar2005" target="blank"><img align="center" src="https://raw.githubusercontent.com/rahuldkjain/github-profile-readme-generator/master/src/images/icons/Social/linked-in-alt.svg" alt="ponajithkumar2005" height="30" width="40" /></a>
-</p>
 
-<h3 align="left">Languages and Tools:</h3>
-<p align="left"> <a href="https://www.cprogramming.com/" target="_blank" rel="noreferrer"> <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/c/c-original.svg" alt="c" width="40" height="40"/> </a> <a href="https://www.w3schools.com/cpp/" target="_blank" rel="noreferrer"> <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/cplusplus/cplusplus-original.svg" alt="cplusplus" width="40" height="40"/> </a> <a href="https://www.w3schools.com/css/" target="_blank" rel="noreferrer"> <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/css3/css3-original-wordmark.svg" alt="css3" width="40" height="40"/> </a> <a href="https://git-scm.com/" target="_blank" rel="noreferrer"> <img src="https://www.vectorlogo.zone/logos/git-scm/git-scm-icon.svg" alt="git" width="40" height="40"/> </a> <a href="https://www.w3.org/html/" target="_blank" rel="noreferrer"> <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/html5/html5-original-wordmark.svg" alt="html5" width="40" height="40"/> </a> <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript" target="_blank" rel="noreferrer"> <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/javascript/javascript-original.svg" alt="javascript" width="40" height="40"/> </a> <a href="https://www.mysql.com/" target="_blank" rel="noreferrer"> <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/mysql/mysql-original-wordmark.svg" alt="mysql" width="40" height="40"/> </a> <a href="https://nodejs.org" target="_blank" rel="noreferrer"> <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/nodejs/nodejs-original-wordmark.svg" alt="nodejs" width="40" height="40"/> </a> <a href="https://www.python.org" target="_blank" rel="noreferrer"> <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/python/python-original.svg" alt="python" width="40" height="40"/> </a> <a href="https://reactjs.org/" target="_blank" rel="noreferrer"> <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/react/react-original-wordmark.svg" alt="react" width="40" height="40"/> </a> </p>
+![Hareesh's GitHub stats](https://github-readme-stats.vercel.app/api?username=pon-ajith-kumar-ponraj&theme=dark&show_icons=true&&hide=issues,contribs)
 
-<p><img align="left" src="https://github-readme-stats.vercel.app/api/top-langs?username=pon-ajith-kumar-ponraj&show_icons=true&locale=en&layout=compact" alt="pon-ajith-kumar-ponraj" /></p>
+[![Leetcode Stats](https://leetcard.jacoblin.cool/Pon Ajith Kumar P?ext=contest&theme=dark)](https://leetcode.com/hareeshprogrammer)
 
-<p>&nbsp;<img align="center" src="https://github-readme-stats.vercel.app/api?username=pon-ajith-kumar-ponraj&show_icons=true&locale=en" alt="pon-ajith-kumar-ponraj" /></p>
-
-<p><img align="center" src="https://github-readme-streak-stats.herokuapp.com/?user=pon-ajith-kumar-ponraj&" alt="pon-ajith-kumar-ponraj" /></p>
+[![Hareesh's github activity graph](https://github-readme-activity-graph.vercel.app/graph?username=pon-ajith-kumar-ponraj&bg_color=000000&color=ffffff&line=51f565&point=ffffff&area=true&hide_border=true)](https://github.com/ashutosh00710/github-readme-activity-graph)
