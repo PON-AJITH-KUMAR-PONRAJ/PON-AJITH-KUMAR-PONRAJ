@@ -31,4 +31,4 @@
 
 ![LeetCode Stats](https://leetcard.jacoblin.cool/ponajithkumar2005?theme=nord&font=Azeret%20Mono)
 
-[![Pon Ajith Kumar P's GitHub Activity Graph](https://github-readme-activity-graph.cyclic.app/graph?username=pon-ajith-kumar-p&theme=github)](https://github.com/ashutosh00710/github-readme-activity-graph)
+[![Pon Ajith Kumar P's github activity graph](https://github-readme-activity-graph.vercel.app/graph?username=pon-ajith-kumar-p&theme=dracula)](https://github.com/ashutosh00710/github-readme-activity-graph)
