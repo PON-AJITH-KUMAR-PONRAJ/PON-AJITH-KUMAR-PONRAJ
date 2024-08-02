@@ -25,15 +25,10 @@
 ### IDE and Tools I Use
 <img height="50" width="50" src="https://img.icons8.com/color/48/000000/visual-studio-code-2019.png"/> <img height="50" width="50" src="https://img.icons8.com/color/50/000000/git.png"/> 
 
+<p>&nbsp;<img align="center" src="https://github-readme-stats.vercel.app/api?username=pon-ajith-kumar-p&show_icons=true&locale=en&theme=tokyonight" alt="ponajithkumarp" /></p>
 
-![Pon Ajith Kumar Ponraj's GitHub stats](https://github-readme-stats.vercel.app/api?username=pon-ajith-kumar-ponraj&theme=dark&show_icons=true&&hide=issues,contribs)
+[![Pon Ajith Kumar P's GitHub Streak](https://github-readme-streak-stats.herokuapp.com/?user=pon-ajith-kumar-p&theme=tokyonight)](https://git.io/streak-stats)
 
 ![LeetCode Stats](https://leetcard.jacoblin.cool/ponajithkumar2005?theme=nord&font=Azeret%20Mono)
 
-[![Sarthak's GitHub activity graph](https://activity-graph.herokuapp.com/graph?username=rishavchanda&&theme=xcode)](https://github.com/rishavchanda)
-
-<p><img align="left" src="https://github-readme-stats.vercel.app/api/top-langs?username=rishavchanda&show_icons=true&locale=en&layout=compact&theme=tokyonight" alt="rishavchanda" /></p>
-
-<p>&nbsp;<img align="center" src="https://github-readme-stats.vercel.app/api?username=rishavchanda&show_icons=true&locale=en&theme=tokyonight" alt="rishavchanda" /></p>
-
-<p><img align="center" src="https://github-readme-streak-stats.herokuapp.com/?user=rishavchanda&&theme=tokyonight" alt="rishavchanda" /></p>
+[![Pon Ajith Kumar P's GitHub Activity Graph](https://github-readme-activity-graph.cyclic.app/graph?username=pon-ajith-kumar-p&theme=github)](https://github.com/ashutosh00710/github-readme-activity-graph)
