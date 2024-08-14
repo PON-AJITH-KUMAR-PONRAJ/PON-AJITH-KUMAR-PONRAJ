@@ -27,8 +27,8 @@
 
 <p>&nbsp;<img align="center" src="https://github-readme-stats.vercel.app/api?username=pon-ajith-kumar-p&show_icons=true&locale=en&theme=tokyonight" alt="ponajithkumarp" /></p>
 
-[![Pon Ajith Kumar P's GitHub Streak](https://github-readme-streak-stats.herokuapp.com/?user=pon-ajith-kumar-p&theme=tokyonight)](https://git.io/streak-stats)
+[![Pon Ajith Kumar Ponraj's GitHub Streak](https://github-readme-streak-stats.herokuapp.com/?user=pon-ajith-kumar-ponraj&theme=tokyonight)](https://git.io/streak-stats)
 
 ![LeetCode Stats](https://leetcard.jacoblin.cool/ponajithkumar2005?theme=nord&font=Azeret%20Mono)
 
-[![Pon Ajith Kumar P's github activity graph](https://github-readme-activity-graph.vercel.app/graph?username=pon-ajith-kumar-p&theme=dracula)](https://github.com/ashutosh00710/github-readme-activity-graph)
+[![Pon Ajith Kumar Ponraj's github activity graph](https://github-readme-activity-graph.vercel.app/graph?username=pon-ajith-kumar-ponraj&theme=dracula)](https://github.com/ashutosh00710/github-readme-activity-graph)
