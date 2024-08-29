@@ -4,9 +4,9 @@
 
 <h3 align="center">IT Sophomore @ College of Engineering Guindy, Anna University</h3>
 <img align="right" width="350" height="350" src="https://i.pinimg.com/originals/03/a4/a5/03a4a5f034bf0bafa661fd8a8aabedc8.gif">
-🌱 I’m currently learning <b>Full Stack Web Development</b>
-<br />👯 I’m looking to collaborate on <b>Front End Development Projects</b>
-<br />💬 Ask me about <b>Web Development</b>
+🌱 I’m currently learning <b>Back End Development</b>
+<br />👯 I’m looking to collaborate on <b>Front End Projects</b>
+<br />💬 Ask me about <b>Front End Development</b>
 <br />😄 Pronouns: He/Him
 <br /><br />📫 How to reach me :
 <br> <a href="mailto:ponajithkumar05@gmail.com">
