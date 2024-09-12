@@ -1,0 +1,90 @@
+CREATE DATABASE dbbank5070;
+\c dbbank5070;
+
+
+-- Create Branch Table
+CREATE TABLE Branch (
+    branch_name VARCHAR(50) PRIMARY KEY,
+    branch_city VARCHAR(50) NOT NULL,
+    assets NUMERIC NOT NULL
+);
+
+-- Create Customer Table
+CREATE TABLE Customer (
+    customer_name VARCHAR(50) PRIMARY KEY,
+    customer_street VARCHAR(50) NOT NULL,
+    customer_city VARCHAR(50) NOT NULL
+);
+
+-- Create Loan Table
+CREATE TABLE Loan (
+    loan_number VARCHAR(50) PRIMARY KEY,
+    branch_name VARCHAR(50) NOT NULL,
+    amount NUMERIC NOT NULL,
+    FOREIGN KEY (branch_name) REFERENCES Branch(branch_name)
+);
+
+-- Create Borrower Table
+CREATE TABLE Borrower (
+    customer_name VARCHAR(50) NOT NULL,
+    loan_number VARCHAR(50) NOT NULL,
+    PRIMARY KEY (customer_name, loan_number),
+    FOREIGN KEY (customer_name) REFERENCES Customer(customer_name),
+    FOREIGN KEY (loan_number) REFERENCES Loan(loan_number)
+);
+
+-- Create Account Table
+CREATE TABLE Account (
+    account_number VARCHAR(50) PRIMARY KEY,
+    branch_name VARCHAR(50) NOT NULL,
+    balance NUMERIC DEFAULT 0 CHECK (balance >= 0),
+    FOREIGN KEY (branch_name) REFERENCES Branch(branch_name)
+);
+
+-- Create Depositor Table
+CREATE TABLE Depositor (
+    customer_name VARCHAR(50) NOT NULL,
+    account_number VARCHAR(50) NOT NULL,
+    PRIMARY KEY (customer_name, account_number),
+    FOREIGN KEY (customer_name) REFERENCES Customer(customer_name),
+    FOREIGN KEY (account_number) REFERENCES Account(account_number)
+);
+
+-- Load data into Branch table
+\COPY Branch(branch_name, branch_city, assets) FROM 'E:\bankdb\branch.csv' DELIMITER ',' CSV HEADER;
+
+-- Load data into Customer table
+\COPY Customer(customer_name, customer_street, customer_city) FROM 'E:\bankdb\customer.csv' DELIMITER ',' CSV HEADER;
+-- Insert missing customer Jackson into the Customer table
+INSERT INTO Customer (customer_name, customer_street, customer_city)
+VALUES ('Jackson', 'Some Street', 'Some City');
+
+-- Load data into Loan table
+\COPY Loan(loan_number, branch_name, amount) FROM 'E:\bankdb\loan.csv' DELIMITER ',' CSV HEADER;
+
+-- Load data into Borrower table
+\COPY Borrower(customer_name, loan_number) FROM 'E:\bankdb\borrower.csv' DELIMITER ',' CSV HEADER;
+
+-- Load data into Account table
+\COPY Account(account_number, branch_name, balance) FROM 'E:\bankdb\account.csv' DELIMITER ',' CSV HEADER;
+
+-- Load data into Depositor table
+\COPY Depositor(customer_name, account_number) FROM 'E:\bankdb\depositor.csv' DELIMITER ',' CSV HEADER;
+
+-- Retrieve all data from Branch table
+SELECT * FROM Branch;
+
+-- Retrieve all data from Customer table
+SELECT * FROM Customer;
+
+-- Retrieve all data from Loan table
+SELECT * FROM Loan;
+
+-- Retrieve all data from Borrower table
+SELECT * FROM Borrower;
+
+-- Retrieve all data from Account table
+SELECT * FROM Account;
+
+-- Retrieve all data from Depositor table
+SELECT * FROM Depositor;
