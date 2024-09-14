@@ -88,3 +88,26 @@ SELECT * FROM Account;
 
 -- Retrieve all data from Depositor table
 SELECT * FROM Depositor;
+
+CREATE TABLE salary (
+    employee_id SERIAL PRIMARY KEY,
+    employee_name VARCHAR(50),
+    branch_name VARCHAR(50),
+    basic_salary NUMERIC(10, 2),
+    FOREIGN KEY (branch_name) REFERENCES branch(branch_name)
+);
+
+INSERT INTO salary (employee_name, branch_name, basic_salary) VALUES
+('John Doe', 'Downtown', 45000.50),
+('Jane Smith', 'Perryridge', 55000.75),
+('Michael Brown', 'Downtown', 62000.00),
+('Emily Davis', 'Mianus', 48000.25),
+('William Johnson', 'Perryridge', 51000.80),
+('Sophia Miller', 'Mianus', 47000.90),
+('Olivia Wilson', 'Downtown', 53000.60),
+('James Moore', 'Round Hill', 61000.10),
+('Ava Taylor', 'Redwood', 52000.45),
+('Liam Anderson', 'Brighton', 60000.00);
+
+-- Retrieve all data from Salary table
+SELECT * FROM salary;
