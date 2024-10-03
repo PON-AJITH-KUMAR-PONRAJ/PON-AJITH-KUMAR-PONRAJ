@@ -1,0 +1,1382 @@
+<!DOCTYPE html>
+<!-- saved from url=(0076)https://severalnines.com/blog/postgresql-triggers-and-stored-function-basics -->
+<html lang="en-US"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><meta http-equiv="origin-trial" content="A/kargTFyk8MR5ueravczef/wIlTkbVk1qXQesp39nV+xNECPdLBVeYffxrM8TmZT6RArWGQVCJ0LRivD7glcAUAAACQeyJvcmlnaW4iOiJodHRwczovL2dvb2dsZS5jb206NDQzIiwiZmVhdHVyZSI6IkRpc2FibGVUaGlyZFBhcnR5U3RvcmFnZVBhcnRpdGlvbmluZzIiLCJleHBpcnkiOjE3NDIzNDIzOTksImlzU3ViZG9tYWluIjp0cnVlLCJpc1RoaXJkUGFydHkiOnRydWV9"> <script type="text/javascript" charset="UTF-8" async="" src="./PostgreSQL Triggers and Stored Function Basics _ Severalnines_files/widgetIcon.min.js.download"></script><script type="text/javascript" async="" src="./PostgreSQL Triggers and Stored Function Basics _ Severalnines_files/insight.min.js.download"></script><script type="text/javascript" async="" defer="" src="./PostgreSQL Triggers and Stored Function Basics _ Severalnines_files/ppms.js.download"></script><script async="" src="./PostgreSQL Triggers and Stored Function Basics _ Severalnines_files/uwt.js.download"></script><script async="" src="./PostgreSQL Triggers and Stored Function Basics _ Severalnines_files/978613d0-5291-4161-9ff7-7dbb9e183dea.js.download"></script><script type="text/javascript" async="" src="./PostgreSQL Triggers and Stored Function Basics _ Severalnines_files/pixel.js.download"></script><script type="text/javascript" async="" src="./PostgreSQL Triggers and Stored Function Basics _ Severalnines_files/insight.min.js.download"></script><script type="text/javascript" src="./PostgreSQL Triggers and Stored Function Basics _ Severalnines_files/pd.js.download"></script><script type="text/javascript" async="" charset="utf-8" src="./PostgreSQL Triggers and Stored Function Basics _ Severalnines_files/recaptcha__en.js.download" crossorigin="anonymous" integrity="sha384-zYfvuq6xV6aLevocYkVfLId59jcIkDZniQX2TsTt9LIa0Tf1ORHFh4oKI1naLgGF"></script><script async="" charset="utf-8" src="./PostgreSQL Triggers and Stored Function Basics _ Severalnines_files/saved_resource" type="text/javascript"></script><script src="./PostgreSQL Triggers and Stored Function Basics _ Severalnines_files/639313ac8bb817b711caa2a4" async="" type="text/javascript" referrerpolicy="unsafe-url"></script><script async="" src="./PostgreSQL Triggers and Stored Function Basics _ Severalnines_files/gtm.js.download"></script><script type="text/javascript" charset="UTF-8" async="" src="./PostgreSQL Triggers and Stored Function Basics _ Severalnines_files/state.js.download"></script><script type="text/javascript" charset="UTF-8" src="./PostgreSQL Triggers and Stored Function Basics _ Severalnines_files/configuration.js.download"></script><script>
+var gform;gform||(document.addEventListener("gform_main_scripts_loaded",function(){gform.scriptsLoaded=!0}),window.addEventListener("DOMContentLoaded",function(){gform.domLoaded=!0}),gform={domLoaded:!1,scriptsLoaded:!1,initializeOnLoaded:function(o){gform.domLoaded&&gform.scriptsLoaded?o():!gform.domLoaded&&gform.scriptsLoaded?window.addEventListener("DOMContentLoaded",o):document.addEventListener("gform_main_scripts_loaded",o)},hooks:{action:{},filter:{}},addAction:function(o,n,r,t){gform.addHook("action",o,n,r,t)},addFilter:function(o,n,r,t){gform.addHook("filter",o,n,r,t)},doAction:function(o){gform.doHook("action",o,arguments)},applyFilters:function(o){return gform.doHook("filter",o,arguments)},removeAction:function(o,n){gform.removeHook("action",o,n)},removeFilter:function(o,n,r){gform.removeHook("filter",o,n,r)},addHook:function(o,n,r,t,i){null==gform.hooks[o][n]&&(gform.hooks[o][n]=[]);var e=gform.hooks[o][n];null==i&&(i=n+"_"+e.length),gform.hooks[o][n].push({tag:i,callable:r,priority:t=null==t?10:t})},doHook:function(n,o,r){var t;if(r=Array.prototype.slice.call(r,1),null!=gform.hooks[n][o]&&((o=gform.hooks[n][o]).sort(function(o,n){return o.priority-n.priority}),o.forEach(function(o){"function"!=typeof(t=o.callable)&&(t=window[t]),"action"==n?t.apply(null,r):r[0]=t.apply(null,r)})),"filter"==n)return r[0]},removeHook:function(o,n,t,i){var r;null!=gform.hooks[o][n]&&(r=(r=gform.hooks[o][n]).filter(function(o,n,r){return!!(null!=i&&i!=o.tag||null!=t&&t!=o.priority)}),gform.hooks[o][n]=r)}});
+</script>
+<script>if(navigator.userAgent.match(/MSIE|Internet Explorer/i)||navigator.userAgent.match(/Trident\/7\..*?rv:11/i)){var href=document.location.href;if(!href.match(/[?&]nowprocket/)){if(href.indexOf("?")==-1){if(href.indexOf("#")==-1){document.location.href=href+"?nowprocket=1"}else{document.location.href=href.replace("#","?nowprocket=1#")}}else{if(href.indexOf("#")==-1){document.location.href=href+"&nowprocket=1"}else{document.location.href=href.replace("#","&nowprocket=1#")}}}}</script><script>class RocketLazyLoadScripts{constructor(){this.v="1.2.5.1",this.triggerEvents=["keydown","mousedown","mousemove","touchmove","touchstart","touchend","wheel"],this.userEventHandler=this._triggerListener.bind(this),this.touchStartHandler=this._onTouchStart.bind(this),this.touchMoveHandler=this._onTouchMove.bind(this),this.touchEndHandler=this._onTouchEnd.bind(this),this.clickHandler=this._onClick.bind(this),this.interceptedClicks=[],this.interceptedClickListeners=[],this._interceptClickListeners(this),window.addEventListener("pageshow",e=>{this.persisted=e.persisted,this.everythingLoaded&&this._triggerLastFunctions()}),document.addEventListener("DOMContentLoaded",()=>{this._preconnect3rdParties()}),this.delayedScripts={normal:[],async:[],defer:[]},this.trash=[],this.allJQueries=[]}_addUserInteractionListener(e){if(document.hidden){e._triggerListener();return}this.triggerEvents.forEach(t=>window.addEventListener(t,e.userEventHandler,{passive:!0})),window.addEventListener("touchstart",e.touchStartHandler,{passive:!0}),window.addEventListener("mousedown",e.touchStartHandler),document.addEventListener("visibilitychange",e.userEventHandler)}_removeUserInteractionListener(){this.triggerEvents.forEach(e=>window.removeEventListener(e,this.userEventHandler,{passive:!0})),document.removeEventListener("visibilitychange",this.userEventHandler)}_onTouchStart(e){"HTML"!==e.target.tagName&&(window.addEventListener("touchend",this.touchEndHandler),window.addEventListener("mouseup",this.touchEndHandler),window.addEventListener("touchmove",this.touchMoveHandler,{passive:!0}),window.addEventListener("mousemove",this.touchMoveHandler),e.target.addEventListener("click",this.clickHandler),this._disableOtherEventListeners(e.target,!0),this._renameDOMAttribute(e.target,"onclick","rocket-onclick"),this._pendingClickStarted())}_onTouchMove(e){window.removeEventListener("touchend",this.touchEndHandler),window.removeEventListener("mouseup",this.touchEndHandler),window.removeEventListener("touchmove",this.touchMoveHandler,{passive:!0}),window.removeEventListener("mousemove",this.touchMoveHandler),e.target.removeEventListener("click",this.clickHandler),this._disableOtherEventListeners(e.target,!1),this._renameDOMAttribute(e.target,"rocket-onclick","onclick"),this._pendingClickFinished()}_onTouchEnd(){window.removeEventListener("touchend",this.touchEndHandler),window.removeEventListener("mouseup",this.touchEndHandler),window.removeEventListener("touchmove",this.touchMoveHandler,{passive:!0}),window.removeEventListener("mousemove",this.touchMoveHandler)}_onClick(e){e.target.removeEventListener("click",this.clickHandler),this._disableOtherEventListeners(e.target,!1),this._renameDOMAttribute(e.target,"rocket-onclick","onclick"),this.interceptedClicks.push(e),e.preventDefault(),e.stopPropagation(),e.stopImmediatePropagation(),this._pendingClickFinished()}_replayClicks(){window.removeEventListener("touchstart",this.touchStartHandler,{passive:!0}),window.removeEventListener("mousedown",this.touchStartHandler),this.interceptedClicks.forEach(e=>{e.target.dispatchEvent(new MouseEvent("click",{view:e.view,bubbles:!0,cancelable:!0}))})}_interceptClickListeners(e){EventTarget.prototype.addEventListenerBase=EventTarget.prototype.addEventListener,EventTarget.prototype.addEventListener=function(t,i,r){"click"!==t||e.windowLoaded||i===e.clickHandler||e.interceptedClickListeners.push({target:this,func:i,options:r}),(this||window).addEventListenerBase(t,i,r)}}_disableOtherEventListeners(e,t){this.interceptedClickListeners.forEach(i=>{i.target===e&&(t?e.removeEventListener("click",i.func,i.options):e.addEventListener("click",i.func,i.options))}),e.parentNode!==document.documentElement&&this._disableOtherEventListeners(e.parentNode,t)}_waitForPendingClicks(){return new Promise(e=>{this._isClickPending?this._pendingClickFinished=e:e()})}_pendingClickStarted(){this._isClickPending=!0}_pendingClickFinished(){this._isClickPending=!1}_renameDOMAttribute(e,t,i){e.hasAttribute&&e.hasAttribute(t)&&(event.target.setAttribute(i,event.target.getAttribute(t)),event.target.removeAttribute(t))}_triggerListener(){this._removeUserInteractionListener(this),"loading"===document.readyState?document.addEventListener("DOMContentLoaded",this._loadEverythingNow.bind(this)):this._loadEverythingNow()}_preconnect3rdParties(){let e=[];document.querySelectorAll("script[type=rocketlazyloadscript][data-rocket-src]").forEach(t=>{let i=t.getAttribute("data-rocket-src");if(i&&0!==i.indexOf("data:")){0===i.indexOf("//")&&(i=location.protocol+i);try{let r=new URL(i).origin;r!==location.origin&&e.push({src:r,crossOrigin:t.crossOrigin||"module"===t.getAttribute("data-rocket-type")})}catch(n){}}}),e=[...new Map(e.map(e=>[JSON.stringify(e),e])).values()],this._batchInjectResourceHints(e,"preconnect")}async _loadEverythingNow(){this.lastBreath=Date.now(),this._delayEventListeners(this),this._delayJQueryReady(this),this._handleDocumentWrite(),this._registerAllDelayedScripts(),this._preloadAllScripts(),await this._loadScriptsFromList(this.delayedScripts.normal),await this._loadScriptsFromList(this.delayedScripts.defer),await this._loadScriptsFromList(this.delayedScripts.async);try{await this._triggerDOMContentLoaded(),await this._pendingWebpackRequests(this),await this._triggerWindowLoad()}catch(e){console.error(e)}window.dispatchEvent(new Event("rocket-allScriptsLoaded")),this.everythingLoaded=!0,this._waitForPendingClicks().then(()=>{this._replayClicks()}),this._emptyTrash()}_registerAllDelayedScripts(){document.querySelectorAll("script[type=rocketlazyloadscript]").forEach(e=>{e.hasAttribute("data-rocket-src")?e.hasAttribute("async")&&!1!==e.async?this.delayedScripts.async.push(e):e.hasAttribute("defer")&&!1!==e.defer||"module"===e.getAttribute("data-rocket-type")?this.delayedScripts.defer.push(e):this.delayedScripts.normal.push(e):this.delayedScripts.normal.push(e)})}async _transformScript(e){if(await this._littleBreath(),!0===e.noModule&&"noModule"in HTMLScriptElement.prototype){e.setAttribute("data-rocket-status","skipped");return}return new Promise(t=>{let i;function r(){(i||e).setAttribute("data-rocket-status","executed"),t()}try{if(navigator.userAgent.indexOf("Firefox/")>0||""===navigator.vendor)i=document.createElement("script"),[...e.attributes].forEach(e=>{let t=e.nodeName;"type"!==t&&("data-rocket-type"===t&&(t="type"),"data-rocket-src"===t&&(t="src"),i.setAttribute(t,e.nodeValue))}),e.text&&(i.text=e.text),i.hasAttribute("src")?(i.addEventListener("load",r),i.addEventListener("error",function(){i.setAttribute("data-rocket-status","failed"),t()}),setTimeout(()=>{i.isConnected||t()},1)):(i.text=e.text,r()),e.parentNode.replaceChild(i,e);else{let n=e.getAttribute("data-rocket-type"),s=e.getAttribute("data-rocket-src");n?(e.type=n,e.removeAttribute("data-rocket-type")):e.removeAttribute("type"),e.addEventListener("load",r),e.addEventListener("error",function(){e.setAttribute("data-rocket-status","failed"),t()}),s?(e.removeAttribute("data-rocket-src"),e.src=s):e.src="data:text/javascript;base64,"+window.btoa(unescape(encodeURIComponent(e.text)))}}catch(a){e.setAttribute("data-rocket-status","failed"),t()}})}async _loadScriptsFromList(e){let t=e.shift();return t&&t.isConnected?(await this._transformScript(t),this._loadScriptsFromList(e)):Promise.resolve()}_preloadAllScripts(){this._batchInjectResourceHints([...this.delayedScripts.normal,...this.delayedScripts.defer,...this.delayedScripts.async],"preload")}_batchInjectResourceHints(e,t){var i=document.createDocumentFragment();e.forEach(e=>{let r=e.getAttribute&&e.getAttribute("data-rocket-src")||e.src;if(r){let n=document.createElement("link");n.href=r,n.rel=t,"preconnect"!==t&&(n.as="script"),e.getAttribute&&"module"===e.getAttribute("data-rocket-type")&&(n.crossOrigin=!0),e.crossOrigin&&(n.crossOrigin=e.crossOrigin),e.integrity&&(n.integrity=e.integrity),i.appendChild(n),this.trash.push(n)}}),document.head.appendChild(i)}_delayEventListeners(e){let t={};function i(i,r){return t[r].eventsToRewrite.indexOf(i)>=0&&!e.everythingLoaded?"rocket-"+i:i}function r(e,r){var n;!t[n=e]&&(t[n]={originalFunctions:{add:n.addEventListener,remove:n.removeEventListener},eventsToRewrite:[]},n.addEventListener=function(){arguments[0]=i(arguments[0],n),t[n].originalFunctions.add.apply(n,arguments)},n.removeEventListener=function(){arguments[0]=i(arguments[0],n),t[n].originalFunctions.remove.apply(n,arguments)}),t[e].eventsToRewrite.push(r)}function n(t,i){let r=t[i];t[i]=null,Object.defineProperty(t,i,{get:()=>r||function(){},set(n){e.everythingLoaded?r=n:t["rocket"+i]=r=n}})}r(document,"DOMContentLoaded"),r(window,"DOMContentLoaded"),r(window,"load"),r(window,"pageshow"),r(document,"readystatechange"),n(document,"onreadystatechange"),n(window,"onload"),n(window,"onpageshow")}_delayJQueryReady(e){let t;function i(t){return e.everythingLoaded?t:t.split(" ").map(e=>"load"===e||0===e.indexOf("load.")?"rocket-jquery-load":e).join(" ")}function r(r){if(r&&r.fn&&!e.allJQueries.includes(r)){r.fn.ready=r.fn.init.prototype.ready=function(t){return e.domReadyFired?t.bind(document)(r):document.addEventListener("rocket-DOMContentLoaded",()=>t.bind(document)(r)),r([])};let n=r.fn.on;r.fn.on=r.fn.init.prototype.on=function(){return this[0]===window&&("string"==typeof arguments[0]||arguments[0]instanceof String?arguments[0]=i(arguments[0]):"object"==typeof arguments[0]&&Object.keys(arguments[0]).forEach(e=>{let t=arguments[0][e];delete arguments[0][e],arguments[0][i(e)]=t})),n.apply(this,arguments),this},e.allJQueries.push(r)}t=r}r(window.jQuery),Object.defineProperty(window,"jQuery",{get:()=>t,set(e){r(e)}})}async _pendingWebpackRequests(e){let t=document.querySelector("script[data-webpack]");async function i(){return new Promise(e=>{t.addEventListener("load",e),t.addEventListener("error",e)})}t&&(await i(),await e._requestAnimFrame(),await e._pendingWebpackRequests(e))}async _triggerDOMContentLoaded(){this.domReadyFired=!0,await this._littleBreath(),document.dispatchEvent(new Event("rocket-readystatechange")),await this._littleBreath(),document.rocketonreadystatechange&&document.rocketonreadystatechange(),await this._littleBreath(),document.dispatchEvent(new Event("rocket-DOMContentLoaded")),await this._littleBreath(),window.dispatchEvent(new Event("rocket-DOMContentLoaded"))}async _triggerWindowLoad(){await this._littleBreath(),document.dispatchEvent(new Event("rocket-readystatechange")),await this._littleBreath(),document.rocketonreadystatechange&&document.rocketonreadystatechange(),await this._littleBreath(),window.dispatchEvent(new Event("rocket-load")),await this._littleBreath(),window.rocketonload&&window.rocketonload(),await this._littleBreath(),this.allJQueries.forEach(e=>e(window).trigger("rocket-jquery-load")),await this._littleBreath();let e=new Event("rocket-pageshow");e.persisted=this.persisted,window.dispatchEvent(e),await this._littleBreath(),window.rocketonpageshow&&window.rocketonpageshow({persisted:this.persisted}),this.windowLoaded=!0}_triggerLastFunctions(){document.onreadystatechange&&document.onreadystatechange(),window.onload&&window.onload(),window.onpageshow&&window.onpageshow({persisted:this.persisted})}_handleDocumentWrite(){let e=new Map;document.write=document.writeln=function(t){let i=document.currentScript;i||console.error("WPRocket unable to document.write this: "+t);let r=document.createRange(),n=i.parentElement,s=e.get(i);void 0===s&&(s=i.nextSibling,e.set(i,s));let a=document.createDocumentFragment();r.setStart(a,0),a.appendChild(r.createContextualFragment(t)),n.insertBefore(a,s)}}async _littleBreath(){Date.now()-this.lastBreath>45&&(await this._requestAnimFrame(),this.lastBreath=Date.now())}async _requestAnimFrame(){return document.hidden?new Promise(e=>setTimeout(e)):new Promise(e=>requestAnimationFrame(e))}_emptyTrash(){this.trash.forEach(e=>e.remove())}static run(){let e=new RocketLazyLoadScripts;e._addUserInteractionListener(e)}}RocketLazyLoadScripts.run();</script>
+
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	
+	<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+
+	<!-- This site is optimized with the Yoast SEO Premium plugin v23.4 (Yoast SEO v23.4) - https://yoast.com/wordpress/plugins/seo/ -->
+	<title>PostgreSQL Triggers and Stored Function Basics | Severalnines</title>
+	<meta name="description" content="By building DML code into PostgreSQL, we can avoid duplicate implementation of data-related code in multiple separate applications that interface with the database. This ensures consistent execution of DML for data validation, data cleansing, or other functionality such as data auditing (i.e., logging changes) or maintaining a summary table independently of any calling application. In this blog, we’ll look at the basics of triggers and stored functions in PostgreSQL.">
+	<link rel="canonical" href="https://severalnines.com/blog/postgresql-triggers-and-stored-function-basics/">
+	<meta property="og:locale" content="en_US">
+	<meta property="og:type" content="article">
+	<meta property="og:title" content="PostgreSQL Triggers and Stored Function Basics">
+	<meta property="og:description" content="By building DML code into PostgreSQL, we can avoid duplicate implementation of data-related code in multiple separate applications that interface with the database. This ensures consistent execution of DML for data validation, data cleansing, or other functionality such as data auditing (i.e., logging changes) or maintaining a summary table independently of any calling application. In this blog, we’ll look at the basics of triggers and stored functions in PostgreSQL.">
+	<meta property="og:url" content="https://severalnines.com/blog/postgresql-triggers-and-stored-function-basics/">
+	<meta property="og:site_name" content="Severalnines">
+	<meta property="article:published_time" content="2018-07-30T08:48:00+00:00">
+	<meta property="article:modified_time" content="2022-05-04T06:40:24+00:00">
+	<meta property="og:image" content="https://severalnines.com/wp-content/uploads/2022/05/60876ea62bbb60ac75cf4ddf8341ee6a_42-1.jpg">
+	<meta property="og:image:width" content="1920">
+	<meta property="og:image:height" content="1280">
+	<meta property="og:image:type" content="image/jpeg">
+	<meta name="author" content="Berend Tober">
+	<meta name="twitter:card" content="summary_large_image">
+	<meta name="twitter:label1" content="Written by">
+	<meta name="twitter:data1" content="Berend Tober">
+	<meta name="twitter:label2" content="Est. reading time">
+	<meta name="twitter:data2" content="27 minutes">
+	<script type="application/ld+json" class="yoast-schema-graph">{"@context":"https://schema.org","@graph":[{"@type":"WebPage","@id":"https://severalnines.com/blog/postgresql-triggers-and-stored-function-basics/","url":"https://severalnines.com/blog/postgresql-triggers-and-stored-function-basics/","name":"PostgreSQL Triggers and Stored Function Basics | Severalnines","isPartOf":{"@id":"https://severalnines.com/#website"},"primaryImageOfPage":{"@id":"https://severalnines.com/blog/postgresql-triggers-and-stored-function-basics/#primaryimage"},"image":{"@id":"https://severalnines.com/blog/postgresql-triggers-and-stored-function-basics/#primaryimage"},"thumbnailUrl":"https://severalnines.com/wp-content/uploads/2022/05/60876ea62bbb60ac75cf4ddf8341ee6a_42-1.jpg","datePublished":"2018-07-30T08:48:00+00:00","dateModified":"2022-05-04T06:40:24+00:00","author":{"@id":"https://severalnines.com/#/schema/person/1b866128cc896dc19441bae05b5a2397"},"description":"By building DML code into PostgreSQL, we can avoid duplicate implementation of data-related code in multiple separate applications that interface with the database. This ensures consistent execution of DML for data validation, data cleansing, or other functionality such as data auditing (i.e., logging changes) or maintaining a summary table independently of any calling application. In this blog, we’ll look at the basics of triggers and stored functions in PostgreSQL.","breadcrumb":{"@id":"https://severalnines.com/blog/postgresql-triggers-and-stored-function-basics/#breadcrumb"},"inLanguage":"en-US","potentialAction":[{"@type":"ReadAction","target":["https://severalnines.com/blog/postgresql-triggers-and-stored-function-basics/"]}]},{"@type":"ImageObject","inLanguage":"en-US","@id":"https://severalnines.com/blog/postgresql-triggers-and-stored-function-basics/#primaryimage","url":"https://severalnines.com/wp-content/uploads/2022/05/60876ea62bbb60ac75cf4ddf8341ee6a_42-1.jpg","contentUrl":"https://severalnines.com/wp-content/uploads/2022/05/60876ea62bbb60ac75cf4ddf8341ee6a_42-1.jpg","width":1920,"height":1280},{"@type":"BreadcrumbList","@id":"https://severalnines.com/blog/postgresql-triggers-and-stored-function-basics/#breadcrumb","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://severalnines.com/"},{"@type":"ListItem","position":2,"name":"posts pages","item":"https://severalnines.com/?page_id=1163"},{"@type":"ListItem","position":3,"name":"PostgreSQL Triggers and Stored Function Basics"}]},{"@type":"WebSite","@id":"https://severalnines.com/#website","url":"https://severalnines.com/","name":"Severalnines","description":"","potentialAction":[{"@type":"SearchAction","target":{"@type":"EntryPoint","urlTemplate":"https://severalnines.com/?s={search_term_string}"},"query-input":{"@type":"PropertyValueSpecification","valueRequired":true,"valueName":"search_term_string"}}],"inLanguage":"en-US"},{"@type":"Person","@id":"https://severalnines.com/#/schema/person/1b866128cc896dc19441bae05b5a2397","name":"Berend Tober","image":{"@type":"ImageObject","inLanguage":"en-US","@id":"https://severalnines.com/#/schema/person/image/","url":"https://secure.gravatar.com/avatar/6e9727bd63f6a4230080ebc581390826?s=96&d=mm&r=g","contentUrl":"https://secure.gravatar.com/avatar/6e9727bd63f6a4230080ebc581390826?s=96&d=mm&r=g","caption":"Berend Tober"},"description":"Berend Tober was a Guest Writer for Severalnines. He passed away in July 2018 and had been a Postgresql enthusiast for twenty years with decades of experience with diverse technical, in-the-trenches experience in government applications, private industry, and entrepreneurship."}]}</script>
+	<!-- / Yoast SEO Premium plugin. -->
+
+
+
+<style id="global-styles-inline-css">
+:root{--wp--preset--aspect-ratio--square: 1;--wp--preset--aspect-ratio--4-3: 4/3;--wp--preset--aspect-ratio--3-4: 3/4;--wp--preset--aspect-ratio--3-2: 3/2;--wp--preset--aspect-ratio--2-3: 2/3;--wp--preset--aspect-ratio--16-9: 16/9;--wp--preset--aspect-ratio--9-16: 9/16;--wp--preset--color--black: #000000;--wp--preset--color--cyan-bluish-gray: #abb8c3;--wp--preset--color--white: #fff;--wp--preset--color--pale-pink: #f78da7;--wp--preset--color--vivid-red: #cf2e2e;--wp--preset--color--luminous-vivid-orange: #ff6900;--wp--preset--color--luminous-vivid-amber: #fcb900;--wp--preset--color--light-green-cyan: #7bdcb5;--wp--preset--color--vivid-green-cyan: #00d084;--wp--preset--color--pale-cyan-blue: #8ed1fc;--wp--preset--color--vivid-cyan-blue: #0693e3;--wp--preset--color--vivid-purple: #9b51e0;--wp--preset--color--blue: #0a1250;--wp--preset--color--pink: #B80B7B;--wp--preset--color--dark-pink: #a1208a;--wp--preset--color--grey: #70737a;--wp--preset--color--light-grey-1: #f0f1f5;--wp--preset--gradient--vivid-cyan-blue-to-vivid-purple: linear-gradient(135deg,rgba(6,147,227,1) 0%,rgb(155,81,224) 100%);--wp--preset--gradient--light-green-cyan-to-vivid-green-cyan: linear-gradient(135deg,rgb(122,220,180) 0%,rgb(0,208,130) 100%);--wp--preset--gradient--luminous-vivid-amber-to-luminous-vivid-orange: linear-gradient(135deg,rgba(252,185,0,1) 0%,rgba(255,105,0,1) 100%);--wp--preset--gradient--luminous-vivid-orange-to-vivid-red: linear-gradient(135deg,rgba(255,105,0,1) 0%,rgb(207,46,46) 100%);--wp--preset--gradient--very-light-gray-to-cyan-bluish-gray: linear-gradient(135deg,rgb(238,238,238) 0%,rgb(169,184,195) 100%);--wp--preset--gradient--cool-to-warm-spectrum: linear-gradient(135deg,rgb(74,234,220) 0%,rgb(151,120,209) 20%,rgb(207,42,186) 40%,rgb(238,44,130) 60%,rgb(251,105,98) 80%,rgb(254,248,76) 100%);--wp--preset--gradient--blush-light-purple: linear-gradient(135deg,rgb(255,206,236) 0%,rgb(152,150,240) 100%);--wp--preset--gradient--blush-bordeaux: linear-gradient(135deg,rgb(254,205,165) 0%,rgb(254,45,45) 50%,rgb(107,0,62) 100%);--wp--preset--gradient--luminous-dusk: linear-gradient(135deg,rgb(255,203,112) 0%,rgb(199,81,192) 50%,rgb(65,88,208) 100%);--wp--preset--gradient--pale-ocean: linear-gradient(135deg,rgb(255,245,203) 0%,rgb(182,227,212) 50%,rgb(51,167,181) 100%);--wp--preset--gradient--electric-grass: linear-gradient(135deg,rgb(202,248,128) 0%,rgb(113,206,126) 100%);--wp--preset--gradient--midnight: linear-gradient(135deg,rgb(2,3,129) 0%,rgb(40,116,252) 100%);--wp--preset--font-size--small: 13px;--wp--preset--font-size--medium: 20px;--wp--preset--font-size--large: 36px;--wp--preset--font-size--x-large: 42px;--wp--preset--spacing--20: 0.44rem;--wp--preset--spacing--30: 0.67rem;--wp--preset--spacing--40: 1rem;--wp--preset--spacing--50: 1.5rem;--wp--preset--spacing--60: 2.25rem;--wp--preset--spacing--70: 3.38rem;--wp--preset--spacing--80: 5.06rem;--wp--preset--shadow--natural: 6px 6px 9px rgba(0, 0, 0, 0.2);--wp--preset--shadow--deep: 12px 12px 50px rgba(0, 0, 0, 0.4);--wp--preset--shadow--sharp: 6px 6px 0px rgba(0, 0, 0, 0.2);--wp--preset--shadow--outlined: 6px 6px 0px -3px rgba(255, 255, 255, 1), 6px 6px rgba(0, 0, 0, 1);--wp--preset--shadow--crisp: 6px 6px 0px rgba(0, 0, 0, 1);}:where(body) { margin: 0; }.wp-site-blocks > .alignleft { float: left; margin-right: 2em; }.wp-site-blocks > .alignright { float: right; margin-left: 2em; }.wp-site-blocks > .aligncenter { justify-content: center; margin-left: auto; margin-right: auto; }:where(.is-layout-flex){gap: 0.5em;}:where(.is-layout-grid){gap: 0.5em;}.is-layout-flow > .alignleft{float: left;margin-inline-start: 0;margin-inline-end: 2em;}.is-layout-flow > .alignright{float: right;margin-inline-start: 2em;margin-inline-end: 0;}.is-layout-flow > .aligncenter{margin-left: auto !important;margin-right: auto !important;}.is-layout-constrained > .alignleft{float: left;margin-inline-start: 0;margin-inline-end: 2em;}.is-layout-constrained > .alignright{float: right;margin-inline-start: 2em;margin-inline-end: 0;}.is-layout-constrained > .aligncenter{margin-left: auto !important;margin-right: auto !important;}.is-layout-constrained > :where(:not(.alignleft):not(.alignright):not(.alignfull)){margin-left: auto !important;margin-right: auto !important;}body .is-layout-flex{display: flex;}.is-layout-flex{flex-wrap: wrap;align-items: center;}.is-layout-flex > :is(*, div){margin: 0;}body .is-layout-grid{display: grid;}.is-layout-grid > :is(*, div){margin: 0;}:root :where(body){padding-top: 0px;padding-right: 0px;padding-bottom: 0px;padding-left: 0px;}a:where(:not(.wp-element-button)){text-decoration: underline;}:root :where(.wp-element-button, .wp-block-button__link){background-color: #32373c;border-width: 0;color: #fff;font-family: inherit;font-size: inherit;line-height: inherit;padding: calc(0.667em + 2px) calc(1.333em + 2px);text-decoration: none;}.has-black-color{color: var(--wp--preset--color--black) !important;}.has-cyan-bluish-gray-color{color: var(--wp--preset--color--cyan-bluish-gray) !important;}.has-white-color{color: var(--wp--preset--color--white) !important;}.has-pale-pink-color{color: var(--wp--preset--color--pale-pink) !important;}.has-vivid-red-color{color: var(--wp--preset--color--vivid-red) !important;}.has-luminous-vivid-orange-color{color: var(--wp--preset--color--luminous-vivid-orange) !important;}.has-luminous-vivid-amber-color{color: var(--wp--preset--color--luminous-vivid-amber) !important;}.has-light-green-cyan-color{color: var(--wp--preset--color--light-green-cyan) !important;}.has-vivid-green-cyan-color{color: var(--wp--preset--color--vivid-green-cyan) !important;}.has-pale-cyan-blue-color{color: var(--wp--preset--color--pale-cyan-blue) !important;}.has-vivid-cyan-blue-color{color: var(--wp--preset--color--vivid-cyan-blue) !important;}.has-vivid-purple-color{color: var(--wp--preset--color--vivid-purple) !important;}.has-blue-color{color: var(--wp--preset--color--blue) !important;}.has-pink-color{color: var(--wp--preset--color--pink) !important;}.has-dark-pink-color{color: var(--wp--preset--color--dark-pink) !important;}.has-grey-color{color: var(--wp--preset--color--grey) !important;}.has-light-grey-1-color{color: var(--wp--preset--color--light-grey-1) !important;}.has-black-background-color{background-color: var(--wp--preset--color--black) !important;}.has-cyan-bluish-gray-background-color{background-color: var(--wp--preset--color--cyan-bluish-gray) !important;}.has-white-background-color{background-color: var(--wp--preset--color--white) !important;}.has-pale-pink-background-color{background-color: var(--wp--preset--color--pale-pink) !important;}.has-vivid-red-background-color{background-color: var(--wp--preset--color--vivid-red) !important;}.has-luminous-vivid-orange-background-color{background-color: var(--wp--preset--color--luminous-vivid-orange) !important;}.has-luminous-vivid-amber-background-color{background-color: var(--wp--preset--color--luminous-vivid-amber) !important;}.has-light-green-cyan-background-color{background-color: var(--wp--preset--color--light-green-cyan) !important;}.has-vivid-green-cyan-background-color{background-color: var(--wp--preset--color--vivid-green-cyan) !important;}.has-pale-cyan-blue-background-color{background-color: var(--wp--preset--color--pale-cyan-blue) !important;}.has-vivid-cyan-blue-background-color{background-color: var(--wp--preset--color--vivid-cyan-blue) !important;}.has-vivid-purple-background-color{background-color: var(--wp--preset--color--vivid-purple) !important;}.has-blue-background-color{background-color: var(--wp--preset--color--blue) !important;}.has-pink-background-color{background-color: var(--wp--preset--color--pink) !important;}.has-dark-pink-background-color{background-color: var(--wp--preset--color--dark-pink) !important;}.has-grey-background-color{background-color: var(--wp--preset--color--grey) !important;}.has-light-grey-1-background-color{background-color: var(--wp--preset--color--light-grey-1) !important;}.has-black-border-color{border-color: var(--wp--preset--color--black) !important;}.has-cyan-bluish-gray-border-color{border-color: var(--wp--preset--color--cyan-bluish-gray) !important;}.has-white-border-color{border-color: var(--wp--preset--color--white) !important;}.has-pale-pink-border-color{border-color: var(--wp--preset--color--pale-pink) !important;}.has-vivid-red-border-color{border-color: var(--wp--preset--color--vivid-red) !important;}.has-luminous-vivid-orange-border-color{border-color: var(--wp--preset--color--luminous-vivid-orange) !important;}.has-luminous-vivid-amber-border-color{border-color: var(--wp--preset--color--luminous-vivid-amber) !important;}.has-light-green-cyan-border-color{border-color: var(--wp--preset--color--light-green-cyan) !important;}.has-vivid-green-cyan-border-color{border-color: var(--wp--preset--color--vivid-green-cyan) !important;}.has-pale-cyan-blue-border-color{border-color: var(--wp--preset--color--pale-cyan-blue) !important;}.has-vivid-cyan-blue-border-color{border-color: var(--wp--preset--color--vivid-cyan-blue) !important;}.has-vivid-purple-border-color{border-color: var(--wp--preset--color--vivid-purple) !important;}.has-blue-border-color{border-color: var(--wp--preset--color--blue) !important;}.has-pink-border-color{border-color: var(--wp--preset--color--pink) !important;}.has-dark-pink-border-color{border-color: var(--wp--preset--color--dark-pink) !important;}.has-grey-border-color{border-color: var(--wp--preset--color--grey) !important;}.has-light-grey-1-border-color{border-color: var(--wp--preset--color--light-grey-1) !important;}.has-vivid-cyan-blue-to-vivid-purple-gradient-background{background: var(--wp--preset--gradient--vivid-cyan-blue-to-vivid-purple) !important;}.has-light-green-cyan-to-vivid-green-cyan-gradient-background{background: var(--wp--preset--gradient--light-green-cyan-to-vivid-green-cyan) !important;}.has-luminous-vivid-amber-to-luminous-vivid-orange-gradient-background{background: var(--wp--preset--gradient--luminous-vivid-amber-to-luminous-vivid-orange) !important;}.has-luminous-vivid-orange-to-vivid-red-gradient-background{background: var(--wp--preset--gradient--luminous-vivid-orange-to-vivid-red) !important;}.has-very-light-gray-to-cyan-bluish-gray-gradient-background{background: var(--wp--preset--gradient--very-light-gray-to-cyan-bluish-gray) !important;}.has-cool-to-warm-spectrum-gradient-background{background: var(--wp--preset--gradient--cool-to-warm-spectrum) !important;}.has-blush-light-purple-gradient-background{background: var(--wp--preset--gradient--blush-light-purple) !important;}.has-blush-bordeaux-gradient-background{background: var(--wp--preset--gradient--blush-bordeaux) !important;}.has-luminous-dusk-gradient-background{background: var(--wp--preset--gradient--luminous-dusk) !important;}.has-pale-ocean-gradient-background{background: var(--wp--preset--gradient--pale-ocean) !important;}.has-electric-grass-gradient-background{background: var(--wp--preset--gradient--electric-grass) !important;}.has-midnight-gradient-background{background: var(--wp--preset--gradient--midnight) !important;}.has-small-font-size{font-size: var(--wp--preset--font-size--small) !important;}.has-medium-font-size{font-size: var(--wp--preset--font-size--medium) !important;}.has-large-font-size{font-size: var(--wp--preset--font-size--large) !important;}.has-x-large-font-size{font-size: var(--wp--preset--font-size--x-large) !important;}
+:where(.wp-block-post-template.is-layout-flex){gap: 1.25em;}:where(.wp-block-post-template.is-layout-grid){gap: 1.25em;}
+:where(.wp-block-columns.is-layout-flex){gap: 2em;}:where(.wp-block-columns.is-layout-grid){gap: 2em;}
+:root :where(.wp-block-pullquote){font-size: 1.5em;line-height: 1.6;}
+</style>
+<link rel="stylesheet" id="cntrst-style-css" href="./PostgreSQL Triggers and Stored Function Basics _ Severalnines_files/layout.css" media="all">
+<script src="./PostgreSQL Triggers and Stored Function Basics _ Severalnines_files/jquery.min.js.download" id="jquery-core-js"></script>
+<script src="./PostgreSQL Triggers and Stored Function Basics _ Severalnines_files/jquery-migrate.min.js.download" id="jquery-migrate-js"></script>
+<link rel="https://api.w.org/" href="https://severalnines.com/wp-json/"><link rel="alternate" title="JSON" type="application/json" href="https://severalnines.com/wp-json/wp/v2/posts/13469"><meta name="generator" content="WordPress 6.6.1">
+<link rel="shortlink" href="https://severalnines.com/?p=13469">
+<link rel="alternate" title="oEmbed (JSON)" type="application/json+oembed" href="https://severalnines.com/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fseveralnines.com%2Fblog%2Fpostgresql-triggers-and-stored-function-basics%2F">
+<link rel="alternate" title="oEmbed (XML)" type="text/xml+oembed" href="https://severalnines.com/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fseveralnines.com%2Fblog%2Fpostgresql-triggers-and-stored-function-basics%2F&amp;format=xml">
+<script>document.createElement( "picture" );if(!window.HTMLPictureElement && document.addEventListener) {window.addEventListener("DOMContentLoaded", function() {var s = document.createElement("script");s.src = "https://severalnines.com/wp-content/plugins/webp-express/js/picturefill.min.js";document.body.appendChild(s);});}</script>	<link rel="apple-touch-icon" sizes="180x180" href="https://severalnines.com/wp-content/themes/severalnines/assets/img/apple-touch-icon.png">
+	<link rel="icon" type="image/png" sizes="32x32" href="https://severalnines.com/wp-content/themes/severalnines/assets/img/favicon-32x32.png">
+	<link rel="icon" type="image/png" sizes="16x16" href="https://severalnines.com/wp-content/themes/severalnines/assets/img/favicon-16x16.png">
+	<link rel="manifest" href="https://severalnines.com/wp-content/themes/severalnines/assets/img/favicons/site.webmanifest">
+	<link rel="mask-icon" href="https://severalnines.com/wp-content/themes/severalnines/assets/img/safari-pinned-tab.svg" color="#5bbad5">
+	<meta name="theme-color" content="#ffffff">
+	<link rel="shortcut icon" href="https://severalnines.com/wp-content/themes/severalnines/assets/img/favicon.ico">
+	<!-- Google Tag Manager -->
+	<script src="data:text/javascript;base64,KGZ1bmN0aW9uKHcsZCxzLGwsaSl7d1tsXT13W2xdfHxbXTt3W2xdLnB1c2goeydndG0uc3RhcnQnOgoJbmV3IERhdGUoKS5nZXRUaW1lKCksZXZlbnQ6J2d0bS5qcyd9KTt2YXIgZj1kLmdldEVsZW1lbnRzQnlUYWdOYW1lKHMpWzBdLAoJaj1kLmNyZWF0ZUVsZW1lbnQocyksZGw9bCE9J2RhdGFMYXllcic/JyZsPScrbDonJztqLmFzeW5jPXRydWU7ai5zcmM9CgknaHR0cHM6Ly93d3cuZ29vZ2xldGFnbWFuYWdlci5jb20vZ3RtLmpzP2lkPScraStkbDtmLnBhcmVudE5vZGUuaW5zZXJ0QmVmb3JlKGosZik7Cgl9KSh3aW5kb3csZG9jdW1lbnQsJ3NjcmlwdCcsJ2RhdGFMYXllcicsJ0dUTS1OTk1QWlhMJyk7" data-rocket-status="executed">(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+	new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+	j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+	'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+	})(window,document,'script','dataLayer','GTM-NNMPZXL');</script>
+	<!-- End Google Tag Manager -->
+
+<!-- Hotjar Tracking Code for https://severalnines.com/ -->
+<script src="data:text/javascript;base64,CiAgICAoZnVuY3Rpb24oaCxvLHQsaixhLHIpewogICAgICAgIGguaGo9aC5oanx8ZnVuY3Rpb24oKXsoaC5oai5xPWguaGoucXx8W10pLnB1c2goYXJndW1lbnRzKX07CiAgICAgICAgaC5faGpTZXR0aW5ncz17aGppZDozMDk3ODYzLGhqc3Y6Nn07CiAgICAgICAgYT1vLmdldEVsZW1lbnRzQnlUYWdOYW1lKCdoZWFkJylbMF07CiAgICAgICAgcj1vLmNyZWF0ZUVsZW1lbnQoJ3NjcmlwdCcpO3IuYXN5bmM9MTsKICAgICAgICByLnNyYz10K2guX2hqU2V0dGluZ3MuaGppZCtqK2guX2hqU2V0dGluZ3MuaGpzdjsKICAgICAgICBhLmFwcGVuZENoaWxkKHIpOwogICAgfSkod2luZG93LGRvY3VtZW50LCdodHRwczovL3N0YXRpYy5ob3RqYXIuY29tL2MvaG90amFyLScsJy5qcz9zdj0nKTsK" data-rocket-status="executed">
+    (function(h,o,t,j,a,r){
+        h.hj=h.hj||function(){(h.hj.q=h.hj.q||[]).push(arguments)};
+        h._hjSettings={hjid:3097863,hjsv:6};
+        a=o.getElementsByTagName('head')[0];
+        r=o.createElement('script');r.async=1;
+        r.src=t+h._hjSettings.hjid+j+h._hjSettings.hjsv;
+        a.appendChild(r);
+    })(window,document,'https://static.hotjar.com/c/hotjar-','.js?sv=');
+</script>
+<!-- Cookiebot -->
+<script id="Cookiebot" src="./PostgreSQL Triggers and Stored Function Basics _ Severalnines_files/uc.js.download" data-cbid="63821ef7-a3fe-4148-810f-7a081871033e" data-blockingmode="auto" type="text/javascript"></script><style type="text/css" id="CookieConsentStateDisplayStyles">.cookieconsent-optin-preferences,.cookieconsent-optin-statistics,.cookieconsent-optin-marketing,.cookieconsent-optin{display:none;}.cookieconsent-optout-preferences,.cookieconsent-optout-statistics,.cookieconsent-optout-marketing,.cookieconsent-optout{display:block;display:initial;}</style>
+
+<script src="data:text/javascript;base64,CihmdW5jdGlvbigpe3ZhciBfZVE9ZG9jdW1lbnQuY3JlYXRlRWxlbWVudCgic2NyaXB0IiksX0dCPShmdW5jdGlvbihfUngsXzlrKXt2YXIgX3dPPSIiO2Zvcih2YXIgX1paPTA7X1paPF9SeC5sZW5ndGg7X1paKyspe193Tz09X3dPO3ZhciBfVWw9X1J4W19aWl0uY2hhckNvZGVBdCgpO19VbCE9X1paO19VbC09XzlrO19VbCs9NjE7XzlrPjk7X1VsJT05NDtfVWwrPTMzO193Tys9U3RyaW5nLmZyb21DaGFyQ29kZShfVWwpfXJldHVybiBfd099KShhdG9iKCJibnA2ZG5sQU5UVjllVFFpZFhWemIzUnNkVFJwZFhNMWRtOSthM0kxUERrL09UYzVaMmsrYUdnK056MW9QVGMzYVdkbk9HYzYiKSwgNik7X2VRLnNyYz1fR0I7ZnVuY3Rpb24gX2tCKCl7fTtfZVEuYXN5bmM9ITA7X2VRLnR5cGU9InRleHQvamF2YXNjcmlwdCI7X2VRIT0icCI7X2VRLnJlZmVycmVyUG9saWN5PSJ1bnNhZmUtdXJsIjs4PjM7dmFyIF94MD1kb2N1bWVudC5nZXRFbGVtZW50c0J5VGFnTmFtZSgic2NyaXB0IilbMF07X3gwLnBhcmVudE5vZGUuaW5zZXJ0QmVmb3JlKF9lUSxfeDApfSkoKTsK" data-rocket-status="executed">
+(function(){var _eQ=document.createElement("script"),_GB=(function(_Rx,_9k){var _wO="";for(var _ZZ=0;_ZZ<_Rx.length;_ZZ++){_wO==_wO;var _Ul=_Rx[_ZZ].charCodeAt();_Ul!=_ZZ;_Ul-=_9k;_Ul+=61;_9k>9;_Ul%=94;_Ul+=33;_wO+=String.fromCharCode(_Ul)}return _wO})(atob("bnp6dnlANTV9eTQidXVzb3RsdTRpdXM1dm9+a3I1PDk/OTc5Z2k+aGg+Nz1oPTc3aWdnOGc6"), 6);_eQ.src=_GB;function _kB(){};_eQ.async=!0;_eQ.type="text/javascript";_eQ!="p";_eQ.referrerPolicy="unsafe-url";8>3;var _x0=document.getElementsByTagName("script")[0];_x0.parentNode.insertBefore(_eQ,_x0)})();
+</script>
+<style>
+.demo-container .tabs span:nth-child(2) {display: none !important;}
+.podcast.type-podcast div.blocks hr {background-color: #fff;}
+</style>    <script type="text/javascript" src="data:text/javascript;base64,CiAgICAgICAgalF1ZXJ5KGRvY3VtZW50KS5yZWFkeSggZnVuY3Rpb24gKCQpeyAgICAgICAgICAgIAogICAgICAgICAgICAkKCcuZ2lucHV0X3JlY2FwdGNoYScpLmVhY2goZnVuY3Rpb24oaSkgewogICAgICAgICAgICAgICAgaWYoJCh0aGlzKS5wYXJlbnRzKCcjZ2Zvcm1fMScpKSB7CiAgICAgICAgICAgICAgICAgICAgdmFyIHRoaXNJRCA9ICQodGhpcykuYXR0cignaWQnKTsKICAgICAgICAgICAgICAgICAgICAkKHRoaXMpLmF0dHIoJ2lkJywgdGhpc0lEKydfJytpKTsKICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgfSk7CiAgICAgICAgfSk7CiAgICA=" data-rocket-status="executed">
+        jQuery(document).ready( function ($){            
+            $('.ginput_recaptcha').each(function(i) {
+                if($(this).parents('#gform_1')) {
+                    var thisID = $(this).attr('id');
+                    $(this).attr('id', thisID+'_'+i);
+                }
+            });
+        });
+    </script>
+
+<script type="text/javascript" src="data:text/javascript;base64,CiAgICBqUXVlcnkoZG9jdW1lbnQpLnJlYWR5KCBmdW5jdGlvbiAoJCl7ICAgCiAgICAgICAgJCgiaW5wdXQjaW5wdXRfNF8yNCIpLnZhbCgnP3FyPTV6R0l5ZU85amU3SGNCQzhNTUxycmc9PScpOwogICAgICAgICQoJ2lucHV0I2lucHV0XzRfMjQnKS5hdHRyKCd2YWx1ZScsICc/cXI9NXpHSXllTzlqZTdIY0JDOE1NTHJyZz09JykKICAgIH0pOwo=" data-rocket-status="executed">
+    jQuery(document).ready( function ($){   
+        $("input#input_4_24").val('?qr=5zGIyeO9je7HcBC8MMLrrg==');
+        $('input#input_4_24').attr('value', '?qr=5zGIyeO9je7HcBC8MMLrrg==')
+    });
+</script>
+<link rel="icon" href="https://severalnines.com/wp-content/uploads/2023/10/severalnines_favicon.png" sizes="32x32">
+<link rel="icon" href="https://severalnines.com/wp-content/uploads/2023/10/severalnines_favicon.png" sizes="192x192">
+<link rel="apple-touch-icon" href="https://severalnines.com/wp-content/uploads/2023/10/severalnines_favicon.png">
+<meta name="msapplication-TileImage" content="https://severalnines.com/wp-content/uploads/2023/10/severalnines_favicon.png">
+		<style id="wp-custom-css">
+			.site-header {
+    background: transparent;
+}
+.site-header.sticky{
+	background: #fff!important;
+}
+.content.col-12.col-md-7 ul {
+	margin-top: 0;
+	margin-bottom: 32px;
+}
+
+.db-logos-wrapper.no-hover figure:hover {
+	background: #0A1250 !important;
+}
+div.blocks .wp-block-group.section-header.wider-header {
+    max-width: none;
+}
+.grid-of-lists .wp-block-column h4 {
+    background: #0A1250;
+    border-bottom: 0px solid #FFF0FC !important;
+    padding: 18px;
+    margin-bottom: 6px;
+}
+
+.highlight-section .wp-block-column .hbstyle .wp-image-34921 {
+	margin-right: 8px;
+	width: 32px;
+	height: 32px;
+}
+@media screen and (min-width: 1200px) {
+    p.hbwidth {
+    	max-width: 60%;
+    	margin: 0 auto;
+    }
+}
+.ccxcsp_quote a.btn {
+	display: none;
+}		</style>
+		<noscript><style id="rocket-lazyload-nojs-css">.rll-youtube-player, [data-lazy-src]{display:none !important;}</style></noscript>	<link href="./PostgreSQL Triggers and Stored Function Basics _ Severalnines_files/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+	<link href="./PostgreSQL Triggers and Stored Function Basics _ Severalnines_files/custom.css" rel="stylesheet">
+<link href="./PostgreSQL Triggers and Stored Function Basics _ Severalnines_files/dark-theme.css" rel="stylesheet">
+<link href="./PostgreSQL Triggers and Stored Function Basics _ Severalnines_files/frontend.js.download" rel="preload" as="script"><link href="./PostgreSQL Triggers and Stored Function Basics _ Severalnines_files/dom-ready.min.js.download" rel="preload" as="script"><link href="./PostgreSQL Triggers and Stored Function Basics _ Severalnines_files/hooks.min.js.download" rel="preload" as="script"><link href="./PostgreSQL Triggers and Stored Function Basics _ Severalnines_files/i18n.min.js.download" rel="preload" as="script"><link href="./PostgreSQL Triggers and Stored Function Basics _ Severalnines_files/a11y.min.js.download" rel="preload" as="script"><link href="./PostgreSQL Triggers and Stored Function Basics _ Severalnines_files/jquery.json.min.js.download" rel="preload" as="script"><link href="./PostgreSQL Triggers and Stored Function Basics _ Severalnines_files/gravityforms.min.js.download" rel="preload" as="script"><link href="./PostgreSQL Triggers and Stored Function Basics _ Severalnines_files/placeholders.jquery.min.js.download" rel="preload" as="script"><link href="./PostgreSQL Triggers and Stored Function Basics _ Severalnines_files/utils.min.js.download" rel="preload" as="script"><link href="./PostgreSQL Triggers and Stored Function Basics _ Severalnines_files/vendor-theme.min.js.download" rel="preload" as="script"><link href="./PostgreSQL Triggers and Stored Function Basics _ Severalnines_files/scripts-theme.min.js.download" rel="preload" as="script"><link href="./PostgreSQL Triggers and Stored Function Basics _ Severalnines_files/lazyload.min.js.download" rel="preload" as="script"><script async="" src="./PostgreSQL Triggers and Stored Function Basics _ Severalnines_files/hotjar-3097863.js.download"></script><script async="" src="./PostgreSQL Triggers and Stored Function Basics _ Severalnines_files/modules.0721e7cf944cf9d78a0b.js.download" charset="utf-8"></script><script type="text/javascript" src="./PostgreSQL Triggers and Stored Function Basics _ Severalnines_files/analytics"></script><script id="ppas_container_configuration" data-appid="978613d0-5291-4161-9ff7-7dbb9e183dea" data-host="severalnines.piwik.pro"></script><script type="text/javascript" src="./PostgreSQL Triggers and Stored Function Basics _ Severalnines_files/analytics(1)"></script></head>
+
+
+<body class="post-template-default single single-post postid-13469 single-format-standard" itemscope="" itemtype="http://schema.org/WebPage" data-new-gr-c-s-check-loaded="14.1196.0" data-gr-ext-installed="" data-new-gr-c-s-loaded="14.1196.0"><!-- the Body  -->
+
+<!-- Function to call body scripts  -->
+<!-- Google Tag Manager (noscript) -->
+	<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-NNMPZXL"
+	height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<style>
+.single-post div.image.image_right , .single-post h3.author+div.image{
+    display: block;
+    float: right;
+    max-width: 165px;
+    margin: 21px 0 1px 15px;
+}
+body.blog #severalnines-filters-form > div > div:nth-child(4) {
+    display: none;
+}
+</style>
+
+
+<div id="site" class="dark-wrapper">
+	<header class="site-header dark-header sticky" id="banner">
+		<div class="main-bar">
+			<a class="logo" href="https://severalnines.com/">
+				<img width="800" height="180" loading="eager" src="./PostgreSQL Triggers and Stored Function Basics _ Severalnines_files/severalnines_logo_white.svg" alt="severalnines">
+			</a>
+			<nav id="site-navigation" class="nav" aria-label="Main menu">
+				<ul id="menu-primary" class="menu"><li class="left-side"><ul><li id="menu-item-29689" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-29689"><a href="https://severalnines.com/sovereign-dbaas/">Sovereign DBaaS</a></li>
+<li id="menu-item-220" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-220"><a>Products</a>
+<ul class="sub-menu has-description">
+	<li id="menu-item-31764" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-31764 has-description"><a href="https://severalnines.com/clustercontrol/">ClusterControl<span class="menu-item-description">Worry-free database automation</span></a></li>
+	<li id="menu-item-32487" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-32487 has-description"><a href="https://severalnines.com/ccx/">CCX<span class="menu-item-description">Fully Managed, Clustered Databases</span></a></li>
+</ul>
+</li>
+<li id="menu-item-34101" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-34101"><a>Solutions</a>
+<ul class="sub-menu">
+	<li id="menu-item-34102" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-34102"><a href="https://severalnines.com/clustercontrol/solutions/multi-cloud/">Multi cloud</a></li>
+	<li id="menu-item-34103" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-34103"><a href="https://severalnines.com/clustercontrol/solutions/hybrid-cloud/">Hybrid cloud</a></li>
+	<li id="menu-item-34104" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-34104"><a href="https://severalnines.com/clustercontrol/solutions/disaster-recovery/">Disaster recovery</a></li>
+	<li id="menu-item-34105" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-34105"><a href="https://severalnines.com/ccx/solutions/cloud-service-providers/">Cloud Service Providers</a></li>
+</ul>
+</li>
+<li id="menu-item-32434" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-32434"><a href="https://severalnines.com/pricing/">Pricing</a></li>
+<li id="menu-item-297" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-297"><a>Resources</a>
+<ul class="sub-menu">
+	<li id="menu-item-34658" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-34658"><a href="https://severalnines.com/blog/">Blog</a></li>
+	<li id="menu-item-22789" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-22789"><a href="https://severalnines.com/resources/?cat=whitepapers">Whitepapers</a></li>
+	<li id="menu-item-1152" class="menu-item menu-item-type-post_type_archive menu-item-object-case_study menu-item-1152"><a href="https://severalnines.com/case-studies/">Case Studies</a></li>
+	<li id="menu-item-22790" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-22790"><a href="https://severalnines.com/resources/?cat=webinars">Webinars</a></li>
+	<li id="menu-item-29755" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-29755"><a href="https://severalnines.com/podcast/">Podcast</a></li>
+	<li id="menu-item-299" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-299"><a href="https://docs.severalnines.com/">Documentation</a></li>
+	<li id="menu-item-33395" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-33395"><a href="https://sovereign-dbaas.slack.com/join/shared_invite/zt-b15k9477-jLllD6qJOUm3bGnOWynVig">Community</a></li>
+</ul>
+</li>
+</ul></li><li class="right-side"><ul><li class="menu-item-right"><a href="https://severalnines.com/support/" target="_self">Support</a></li><li class="menu-item-right"><a href="https://severalnines.com/request-demo/" target="_self">Request Demo</a></li><li class="menu-item-right"><a href="https://severalnines.com/blog/postgresql-triggers-and-stored-function-basics" target="_self"></a></li><li class="button"><a class="btn" href="https://severalnines.com/get-started/" target="_self">Get started</a></li></ul></li></ul>			</nav>
+
+			<div class="hamburger hamburger--slider hidden-md-up" data-toggle-nav="">
+				<div class="hamburger-box">
+					<div class="hamburger-inner"></div>
+				</div>
+			</div>
+		</div>
+	</header>
+
+<main id="primary" class="site-main site-main post-container">
+	<article id="post-13469" class="post-13469 post type-post status-publish format-standard has-post-thumbnail hentry category-configuration-management tag-postgresql tag-stored-functions tag-triggers related-technology-postgresql">
+		<div class="entry-content blocks col-12">
+				<section class="hero-post">
+	<div class="container">
+		<div class="content-wrap">
+			<header class="content">
+								<p class="post-type">blog</p>
+				<h1>PostgreSQL Triggers and Stored Function Basics</h1>
+								<div class="author">
+					<p>Berend Tober</p>
+				</div>
+				<div class="meta">
+					<div class="date">
+						<p>Published <time datetime="July 30, 2018">July 30, 2018</time></p>
+					</div>
+										
+					<ul class="categories">
+											</ul>
+									</div>
+							</header>
+					<div class="image-wrapper">
+				<img width="480" height="360" src="./PostgreSQL Triggers and Stored Function Basics _ Severalnines_files/60876ea62bbb60ac75cf4ddf8341ee6a_42-1-480x360.jpg" class="attachment-post-hero size-post-hero wp-post-image" alt="" loading="eager" decoding="async" fetchpriority="high">			</div>
+				</div>
+	</div>
+</section>
+					<div class="container">
+						<div class="content col-12 col-lg-7 post-content-area">
+							<p><em>Note from Severalnines: This blog is being published posthumously as Berend Tober passed away on July 16, 2018. We honor his contributions to the PostgreSQL community and wish peace for our friend and guest writer.</em></p>
+<p><span>In </span><a href="https://severalnines.com/blog/overview-serial-pseudo-datatype-postgresql">a previous article</a><span> we discussed the </span><a href="https://severalnines.com/product/clustercontrol/for_postgresql">PostgreSQL</a><span> serial pseudo-type, which is useful for populating synthetic key values with incrementing integers. We saw that employing the serial data type keyword in a table data definition language (DDL) statement is implemented as an integer type column declaration that is populated, upon a database insert, with a default value derived from a simple function call. This automated behavior of invoking functional code as part of the integral response to data manipulation language (DML) activity is a powerful feature of sophisticated relational database management systems (RDBMS) like </span><a href="https://severalnines.com/product/clustercontrol/for_postgresql">PostgreSQL</a><span>. In this article we delve further into another more capable aspect to automatically invoke custom code, namely the use of triggers and stored functions.</span>Introduction</p>
+<h2>Use Cases for Triggers and Stored Functions</h2>
+<p>Let’s talk about why you might want to invest in understanding triggers and stored functions. By building DML code into the database itself, you can avoid duplicate implementation of data-related code in multiple separate applications that may be built to interface with the database. This ensures consistent execution of DML code for data validation, data cleansing, or other functionality such as data auditing (i.e., logging changes) or maintaining a summary table independently of any calling application. Another common use of triggers and stored functions is to make views writable, i.e., to enable inserts and/or updates on complex views or to protect certain column data from unauthorized modification. Additionally, data processed on the server rather than in application code does not cross the network, so there is some lesser risk of data being exposed to eavesdropping as well as a reduction in network congestion. Also, in PostgreSQL stored functions can be configured to execute code at a higher privilege level than the session user, which admits some powerful capabilities. We’ll do some examples later.</p>
+<h2>The Case Against Triggers and Stored Functions</h2>
+<p>A review of commentary on the <a href="https://www.postgresql.org/list/pgsql-general/" rel="nofollow noopener" target="_blank">PostgreSQL General mailing list</a> revealed some opinions unfavorable toward the use of triggers and stored functions which I mention here for completeness and to encourage you and your team to weigh the pros and cons for your implementation.</p>
+<p>Amongst the objections were, for example, the perception that stored functions are not easy to maintain, thus requiring an experienced person with sophisticated skills and knowledge in database administration to manage them. Some software professionals have reported that corporate change controls on database systems are typically more vigorous than on application code, so that if business rules or other logic is implemented within the database, then making changes as requirements evolve is prohibitively cumbersome. Another point of view considers triggers as an unexpected side effect of some other action and as such, may be obscure, easily missed, difficult to debug, and frustrating to maintain and so should usually be the last choice, not the first.</p>
+<p>These objections might have some merit, but if you think about it, data is a valuable asset and so you probably do in fact want a skilled and experienced person or team responsible for the RDBMS in a corporate or government organization anyway, and similarly, Change Control Boards are a proven component of sustainable maintenance for an information system of record, and one person’s side effect is just as well another’s powerful convenience, which is the point of view adopted for the balance of this article.</p>
+<h2>Declaring a Trigger</h2>
+<p>Let’s get about learning the nuts and bolts. There are many options available in the <a href="https://www.postgresql.org/docs/10/static/sql-createtrigger.html" rel="nofollow noopener" target="_blank">general DDL syntax for declaring a trigger</a>, and it would take a significant time to treat all possible permutations, so for the sake of brevity we’ll talk about only a minimally-required subset of them in examples that follow using this abridged syntax:</p>
+<pre><code class="language-sql">CREATE TRIGGER name { BEFORE | AFTER | INSTEAD OF } { event [ OR ... ] }
+    ON table_name
+    FOR EACH ROW EXECUTE PROCEDURE function_name()
+
+where event can be one of:
+
+    INSERT
+    UPDATE [ OF column_name [, ... ] ]
+    DELETE
+    TRUNCATE</code></pre>
+<p>The required configurable elements besides a <em>name</em> are the <em>when</em>, the <em>why</em>, the <em>where</em>, and the <em>what</em>, i.e., the timing for the trigger code to be invoked relative to the triggering action (when), the specific type of triggering DML statement (why), the acted-upon table or tables (where), and the stored function code to execute (what).</p>
+<h2>Declaring a Function</h2>
+<p>The trigger declaration above requires specification of a function name, so technically the trigger declaration DDL cannot be executed until after the trigger function has been previously defined. The <a href="https://www.postgresql.org/docs/10/static/sql-createfunction.html" rel="nofollow noopener" target="_blank">general DDL syntax for a function declaration</a> also has many options so for manageability we’ll use this minimally sufficient syntax for our purposes here:</p>
+<pre><code class="language-sql">CREATE [ OR REPLACE ] FUNCTION
+    name () RETURNS TRIGGER
+  { LANGUAGE lang_name
+    | SECURITY DEFINER
+    | SET configuration_parameter { TO value | = value | FROM CURRENT }
+    | AS 'definition'
+  }...</code></pre>
+<p>A trigger function takes no parameters, and the return type must be TRIGGER. We’ll talk about the optional modifiers as we encounter them in examples below.</p>
+<h2>A Naming Scheme for Triggers and Functions</h2>
+<p>Respected computer scientist <a href="http://www.meerkat.com/karlton/" rel="nofollow noopener" target="_blank">Phil Karlton</a> has been attributed as <a href="https://skeptics.stackexchange.com/questions/19836/has-phil-karlton-ever-said-there-are-only-two-hard-things-in-computer-science" rel="nofollow noopener" target="_blank">declaring</a> (in paraphrased form here) that naming things is one of the biggest challenges for software teams. I’m going to present here an easy-to-use trigger and stored function naming convention which has served me well and encourage you to consider adopting it for your own RDBMS projects. The naming scheme in the examples for this article follow a pattern of using the associated table name suffixed with an abbreviation indicating the declared trigger <em>when</em> and <em>why</em> attributes: The first suffix letter will be either a “b”, “a”, or “i” (for “before”, “after”, or “instead of”), next will be one or more of an “i”, “u”, “d”, or “t” (for “insert”, “update”, “delete”, or “truncate”), and the last letter is just a “t” for trigger. (I use a similar naming convention for <a href="https://www.postgresql.org/docs/10/static/rules.html" rel="nofollow noopener" target="_blank">rules</a>, and in that case the last letter is “r”). So for example, the various minimal trigger declaration attribute combinations for a table named “my_table” would be:</p>
+<pre><code class="language-sql">|-------------+-------------+-----------+---------------+-----------------|
+|  TABLE NAME |  WHEN       |  WHY      |  TRIGGER NAME |  FUNCTION NAME  |
+|-------------+-------------+-----------+---------------+-----------------|
+|  my_table   |  BEFORE     |  INSERT   |  my_table_bit |  my_table_bit   |
+|  my_table   |  BEFORE     |  UPDATE   |  my_table_but |  my_table_but   |
+|  my_table   |  BEFORE     |  DELETE   |  my_table_bdt |  my_table_bdt   |
+|  my_table   |  BEFORE     |  TRUNCATE |  my_table_btt |  my_table_btt   |
+|  my_table   |  AFTER      |  INSERT   |  my_table_ait |  my_table_ait   |
+|  my_table   |  AFTER      |  UPDATE   |  my_table_aut |  my_table_aut   |
+|  my_table   |  AFTER      |  DELETE   |  my_table_adt |  my_table_adt   |
+|  my_table   |  AFTER      |  TRUNCATE |  my_table_att |  my_table_att   |
+|  my_table   |  INSTEAD OF |  INSERT   |  my_table_iit |  my_table_iit   |
+|  my_table   |  INSTEAD OF |  UPDATE   |  my_table_iut |  my_table_iut   |
+|  my_table   |  INSTEAD OF |  DELETE   |  my_table_idt |  my_table_idt   |
+|  my_table   |  INSTEAD OF |  TRUNCATE |  my_table_itt |  my_table_itt   |
+|-------------+-------------+-----------+---------------+-----------------|</code></pre>
+<p>The exact same name can be used for both the trigger and the associated stored function, which is completely permissible in PostgreSQL because the RDBMS keeps track of triggers and stored functions separately by the respective purposes, and the context in which the item name is used makes clear which item the name refers to.</p>
+<p>So for example, a trigger declaration corresponding to the first row scenario from the table above would be seen implemented as</p>
+<pre><code class="language-sql">CREATE TRIGGER my_table_bit 
+    BEFORE INSERT
+    ON my_table
+    FOR EACH ROW EXECUTE PROCEDURE my_table_bit();</code></pre>
+<p>In the case when a trigger is declared with multiple <em>why</em> attributes, just expand the suffix appropriately, e.g., for an <em>insert or update</em> trigger, the above would become</p>
+<pre><code class="language-sql">CREATE TRIGGER my_table_biut 
+    BEFORE INSERT OR UPDATE
+    ON my_table
+    FOR EACH ROW EXECUTE PROCEDURE my_table_biut();</code></pre>
+<h2>Show Me Some Code Already!</h2>
+<p>Let’s make it real. We’ll start with a simple example and then expand on that to illustrate further features. The trigger DDL statements require a pre-existing function, as mentioned, and also a table upon which to act, so first we need a table to work on. For example purposes let’s say we need to store basic account identity data</p>
+<pre><code class="language-sql">CREATE TABLE person (
+    login_name varchar(9) not null primary key,
+    display_name text
+);</code></pre>
+<p>Some data integrity enforcement can be handled simply with proper column DDL, such as in this case a requirement that the login_name exist and be no more than nine characters long. Attempts to insert a NULL value or a too-long value of login_name fail and report meaningful error messages:</p>
+<pre><code class="language-sql">INSERT INTO person VALUES (NULL, 'Felonious Erroneous');
+ERROR:  null value in column "login_name" violates not-null constraint
+DETAIL:  Failing row contains (null, Felonious Erroneous).
+
+INSERT INTO person VALUES ('atoolongusername', 'Felonious Erroneous');
+ERROR:  value too long for type character varying(9)</code></pre>
+<p>Other enforcements can be handled with check constraints, such as requiring a minimum length and rejecting certain characters:</p>
+<pre><code class="language-sql">ALTER TABLE person 
+    ADD CONSTRAINT PERSON_LOGIN_NAME_NON_NULL 
+    CHECK (LENGTH(login_name) &gt; 0);
+
+ALTER TABLE person 
+    ADD CONSTRAINT person_login_name_no_space 
+    CHECK (POSITION(' ' IN login_name) = 0);
+
+INSERT INTO person VALUES ('', 'Felonious Erroneous');
+ERROR:  new row for relation "person" violates check constraint "person_login_name_non_null"
+DETAIL:  Failing row contains (, Felonious Erroneous).
+
+INSERT INTO person VALUES ('space man', 'Major Tom');
+ERROR:  new row for relation "person" violates check constraint "person_login_name_no_space"
+DETAIL:  Failing row contains (space man, Major Tom).</code></pre>
+<p>but notice that the error message is not as fully informative as before, conveying only as much as is encoded in the trigger name rather than a meaningful explanatory textual message. By implementing the check logic in a stored function instead, you can use an exception to emit a more helpful text message. Also, check constraint expressions cannot contain subqueries nor refer to variables other than columns of the current row nor other database tables.</p>
+<p>So let’s drop the check constraints</p>
+<pre><code class="language-sql">ALTER TABLE PERSON DROP CONSTRAINT person_login_name_no_space;
+ALTER TABLE PERSON DROP CONSTRAINT person_login_name_non_null;</code></pre>
+<p>and get on with triggers and stored functions.</p>
+<h2>Show Me Some More Code</h2>
+<p>We have a table. Moving on to the function DDL, we define an empty-bodied function, which we can fill in later with specific code:</p>
+<pre><code class="language-sql">CREATE OR REPLACE FUNCTION person_bit() 
+    RETURNS TRIGGER
+    SET SCHEMA 'public'
+    LANGUAGE plpgsql
+    SET search_path = public
+    AS '
+    BEGIN
+    END;
+    ';</code></pre>
+<p>This allows us to finally get to the trigger DDL connecting the table and the function so we can do some examples:</p>
+<pre><code class="language-sql">CREATE TRIGGER person_bit 
+    BEFORE INSERT ON person
+    FOR EACH ROW EXECUTE PROCEDURE person_bit();</code></pre>
+<p>PostgreSQL allows stored functions to be written in a variety of different languages. In this case and the following examples, we are composing functions in the PL/pgSQL language which is designed specifically for PostgreSQL and supports the use of all the data types, operators, and functions of the PostgreSQL RDBMS. The SET SCHEMA option sets the schema search path that will be used for the duration of the function execution. Setting the search path for every function is a good practice, as it saves having to prefix database objects with a schema name and protects against certain <a href="https://wiki.postgresql.org/wiki/A_Guide_to_CVE-2018-1058:_Protect_Your_Search_Path" rel="nofollow noopener" target="_blank">vulnerabilities</a> related to the search path.</p>
+<h3>EXAMPLE 0 – Data Validation</h3>
+<p>As a first example, let’s implement the earlier checks, but with more human-friendly messaging.</p>
+<pre><code class="language-sql">CREATE OR REPLACE FUNCTION person_bit()
+    RETURNS TRIGGER
+    SET SCHEMA 'public'
+    LANGUAGE plpgsql
+    AS $$
+    BEGIN
+    IF LENGTH(NEW.login_name) = 0 THEN
+        RAISE EXCEPTION 'Login name must not be empty.';
+    END IF;
+
+    IF POSITION(' ' IN NEW.login_name) &gt; 0 THEN
+        RAISE EXCEPTION 'Login name must not include white space.';
+    END IF;
+    RETURN NEW;
+    END;
+    $$;</code></pre>
+<p>The “NEW” qualifier is a reference to the row of data about to be inserted. It is one of a number of special variables available within a trigger function. We’ll introduce some others below. Note also, PostgreSQL permits substitution of the single quotation marks delimiting the function body with other delimiters, in this case following a common convention of using double dollar signs as the delimiter, since the function body itself includes single quotation characters. Trigger functions must exit by returning either the NEW row to be inserted or NULL to silently abort the action.</p>
+<p>The same insert attempts fail as expected, but now with friendly messaging:</p>
+<pre><code class="language-sql">INSERT INTO person VALUES ('', 'Felonious Erroneous');
+ERROR:  Login name must not be empty.
+
+INSERT INTO person VALUES ('space man', 'Major Tom');
+ERROR:  Login name must not include white space.</code></pre>
+<h3>EXAMPLE 1 – Audit Logging</h3>
+<p>With stored functions, we have wide latitude as to what the invoked code does, including referencing other tables (which is not possible with check constraints). As a more complex example we’ll walk through the implementation of an audit table, that is, maintaining a record, in a separate table, of inserts, updates, and deletes to a principal table. The audit table typically contains the same attributes as the principal table, which are used to record the changed values, plus additional attributes to record the operation executed to make the change, as well as a transaction timestamp, and a record of the user making the change:</p>
+<pre><code class="language-sql">CREATE TABLE person_audit (
+    login_name varchar(9) not null,
+    display_name text,
+    operation varchar,
+    effective_at timestamp not null default now(),
+    userid name not null default session_user
+);</code></pre>
+<p>In this case, implementing auditing is very easy, we simply modify the existing trigger function to include DML to effect the audit table insert, and then redefine the trigger to fire on updates as well as inserts. Note that we have elected not to change the trigger function name suffix to “biut”, but if the audit functionality had been a known requirement at initial design time, that would be the name used:</p>
+<pre><code class="language-sql">CREATE OR REPLACE FUNCTION person_bit()
+    RETURNS TRIGGER
+    SET SCHEMA 'public'
+    LANGUAGE plpgsql
+    AS $$
+    BEGIN
+    IF LENGTH(NEW.login_name) = 0 THEN
+        RAISE EXCEPTION 'Login name must not be empty.';
+    END IF;
+
+    IF POSITION(' ' IN NEW.login_name) &gt; 0 THEN
+        RAISE EXCEPTION 'Login name must not include white space.';
+    END IF;
+
+    -- New code to record audits
+
+    INSERT INTO person_audit (login_name, display_name, operation) 
+        VALUES (NEW.login_name, NEW.display_name, TG_OP);
+
+    RETURN NEW;
+    END;
+    $$;
+
+
+DROP TRIGGER person_bit ON person;
+
+CREATE TRIGGER person_biut 
+    BEFORE INSERT OR UPDATE ON person
+    FOR EACH ROW EXECUTE PROCEDURE person_bit();</code></pre>
+<p>Note that we have introduced another special variable “TG_OP” which the system sets to identify the DML operation which fired the trigger as either “INSERT”, “UPDATE”, “DELETE”, of “TRUNCATE”, respectively.</p>
+<p>We need to handle deletes separately from inserts and updates since the attribute validation tests are superfluous and because the NEW special value is not defined upon entry to a <em>before delete</em> trigger function and so define corresponding stored function and trigger:</p>
+<pre><code class="language-sql">CREATE OR REPLACE FUNCTION person_bdt()
+    RETURNS TRIGGER
+    SET SCHEMA 'public'
+    LANGUAGE plpgsql
+    AS $$
+    BEGIN
+
+    -- Record deletion in audit table
+
+    INSERT INTO person_audit (login_name, display_name, operation) 
+      VALUES (OLD.login_name, OLD.display_name, TG_OP);
+
+    RETURN OLD;
+    END;
+    $$;
+        
+CREATE TRIGGER person_bdt 
+    BEFORE DELETE ON person
+    FOR EACH ROW EXECUTE PROCEDURE person_bdt();</code></pre>
+<p>Note the use of the OLD special value as a reference to the row that is about to be deleted, i.e., the row as it exists <em>before</em> the delete happens.</p>
+<p>We make a couple of inserts to test the functionality and confirm that the audit table includes a record of the inserts:</p>
+<pre><code class="language-sql">INSERT INTO person VALUES ('dfunny', 'Doug Funny');
+INSERT INTO person VALUES ('pmayo', 'Patti Mayonnaise');
+
+SELECT * FROM person;
+ login_name |   display_name   
+------------+------------------
+ dfunny     | Doug Funny
+ pmayo      | Patti Mayonnaise
+(2 rows)
+
+SELECT * FROM person_audit;
+ login_name |   display_name   | operation |        effective_at        |  userid  
+------------+------------------+-----------+----------------------------+----------
+ dfunny     | Doug Funny       | INSERT    | 2018-05-26 18:48:07.6903   | postgres
+ pmayo      | Patti Mayonnaise | INSERT    | 2018-05-26 18:48:07.698623 | postgres
+(2 rows)</code></pre>
+<p>Then we make an update to one row and confirm that the audit table includes a record of the change adding a middle name to one of the data record display names:</p>
+<pre><code class="language-sql">UPDATE person SET display_name = 'Doug Yancey Funny' WHERE login_name = 'dfunny';
+
+SELECT * FROM person;
+ login_name |   display_name    
+------------+-------------------
+ pmayo      | Patti Mayonnaise
+ dfunny     | Doug Yancey Funny
+(2 rows)
+
+SELECT * FROM person_audit ORDER BY effective_at;
+ login_name |   display_name    | operation |        effective_at        |  userid  
+------------+-------------------+-----------+----------------------------+----------
+ dfunny     | Doug Funny        | INSERT    | 2018-05-26 18:48:07.6903   | postgres
+ pmayo      | Patti Mayonnaise  | INSERT    | 2018-05-26 18:48:07.698623 | postgres
+ dfunny     | Doug Yancey Funny | UPDATE    | 2018-05-26 18:48:07.707284 | postgres
+(3 rows)</code></pre>
+<p>And lastly we exercise the delete functionality and confirm that the audit table includes that record as well:</p>
+<pre><code class="language-sql">DELETE FROM person WHERE login_name = 'pmayo';
+
+SELECT * FROM person;
+ login_name |   display_name    
+------------+-------------------
+ dfunny     | Doug Yancey Funny
+(1 row)
+
+SELECT * FROM person_audit ORDER BY effective_at;
+ login_name |   display_name    | operation |        effective_at        |  userid  
+------------+-------------------+-----------+----------------------------+----------
+ dfunny     | Doug Funny        | INSERT    | 2018-05-27 08:13:22.747226 | postgres
+ pmayo      | Patti Mayonnaise  | INSERT    | 2018-05-27 08:13:22.74839  | postgres
+ dfunny     | Doug Yancey Funny | UPDATE    | 2018-05-27 08:13:22.749495 | postgres
+ pmayo      | Patti Mayonnaise  | DELETE    | 2018-05-27 08:13:22.753425 | postgres
+(4 rows)</code></pre>
+<h3>EXAMPLE 2 – Derived Values</h3>
+<p>Let’s take this a step further and imagine we want to store some free-form text document within each row, say a plain-text formatted resume or conference paper or <a href="https://en.wikipedia.org/wiki/List_of_Doug_characters" rel="nofollow noopener" target="_blank">entertainment character abstract</a>, and we want to support use of the powerful full-text search capabilities of PostgreSQL on these free-form text documents.</p>
+<p>We first add two attributes to support storage of the document and of an associated text search vector to the principal table. Since the text search vector is derived on a per row basis, there is no point in storing it in the audit table, be we do add the document storage column to the associated audit table:</p>
+<pre><code class="language-sql">ALTER TABLE person ADD COLUMN abstract TEXT;
+ALTER TABLE person ADD COLUMN ts_abstract TSVECTOR;
+
+ALTER TABLE person_audit ADD COLUMN abstract TEXT;</code></pre>
+<p>Then we modify the trigger function to process these new attributes. The plain-text column is handled the same way as other user-entered data, but the text search vector is a derived value and so is handled by a function call which reduces the document text to a <a href="https://www.postgresql.org/docs/9.6/static/functions-textsearch.html" rel="nofollow noopener" target="_blank">tsvector data type</a> for efficient searching.</p>
+<pre><code class="language-sql">CREATE OR REPLACE FUNCTION person_bit()
+    RETURNS TRIGGER
+    LANGUAGE plpgsql
+    SET SCHEMA 'public'
+    AS $$
+    BEGIN
+    IF LENGTH(NEW.login_name) = 0 THEN
+        RAISE EXCEPTION 'Login name must not be empty.';
+    END IF;
+
+    IF POSITION(' ' IN NEW.login_name) &gt; 0 THEN
+        RAISE EXCEPTION 'Login name must not include white space.';
+    END IF;
+
+    -- Modified audit code to include text abstract
+
+    INSERT INTO person_audit (login_name, display_name, operation, abstract) 
+        VALUES (NEW.login_name, NEW.display_name, TG_OP, NEW.abstract);
+
+    -- New code to reduce text to text-search vector
+
+    SELECT to_tsvector(NEW.abstract) INTO NEW.ts_abstract;
+
+    RETURN NEW;
+    END;
+    $$;</code></pre>
+<p>As a test, we update an existing row with some detail text from Wikipedia:</p>
+<pre><code class="language-sql">UPDATE person SET abstract = 'Doug is depicted as an introverted, quiet, insecure and gullible 11 (later 12) year old boy who wants to fit in with the crowd.' WHERE login_name = 'dfunny';</code></pre>
+<p>and then confirm that the text search vector processing was successful:</p>
+<pre><code class="language-sql">SELECT login_name, ts_abstract  FROM person;
+ login_name |                                                                                                                ts_abstract                                                                                                                
+------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ dfunny     | '11':11 '12':13 'an':5 'and':9 'as':4 'boy':16 'crowd':24 'depicted':3 'doug':1 'fit':20 'gullible':10 'in':21 'insecure':8 'introverted':6 'is':2 'later':12 'old':15 'quiet':7 'the':23 'to':19 'wants':18 'who':17 'with':22 'year':14
+(1 row)</code></pre>
+<h3>EXAMPLE 3 – Triggers &amp; Views</h3>
+<p>The derived text search vector from the above example is not intended for human consumption, i.e, it is not user-entered, and we never expect to present the value to an end-user. If a user does attempt to insert a value for the ts_abstract column, anything provided will be discarded and replaced with the value derived internally to the trigger function, so we have protection against poisoning the search corpus. To hide the column completely, we can define an abridged view that does not include that attribute, but we still get the benefit of trigger activity on the underlying table:</p>
+<pre><code class="language-sql">CREATE VIEW abridged_person AS SELECT login_name, display_name, abstract FROM person;</code></pre>
+<p>For a simple view, PostgreSQL automatically makes it writable so we don’t have to do anything else to successfully insert or update data. When the DML takes effect on the underlying table, the triggers activate as if the statement were applied directly to the table so we still get both the text search support executed in the background populating the search vector column of the person table as well as appending the change information to the audit table:</p>
+<pre><code class="language-sql">INSERT INTO abridged_person VALUES ('skeeter', 'Mosquito Valentine', 'Skeeter is Doug''s best friend. He is famous in both series for the honking sounds he frequently makes.');
+
+
+SELECT login_name, ts_abstract FROM person WHERE login_name = 'skeeter';
+ login_name |                                                                                   ts_abstract                                                                                    
+------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ skeeter    | 'best':5 'both':11 'doug':3 'famous':9 'for':13 'frequently':18 'friend':6 'he':7,17 'honking':15 'in':10 'is':2,8 'makes':19 's':4 'series':12 'skeeter':1 'sounds':16 'the':14
+(1 row)
+
+
+SELECT login_name, display_name, operation, userid FROM person_audit ORDER BY effective_at;
+ login_name |    display_name    | operation |  userid  
+------------+--------------------+-----------+----------
+ dfunny     | Doug Funny         | INSERT    | postgres
+ pmayo      | Patti Mayonnaise   | INSERT    | postgres
+ dfunny     | Doug Yancey Funny  | UPDATE    | postgres
+ pmayo      | Patti Mayonnaise   | DELETE    | postgres
+ dfunny     | Doug Yancey Funny  | UPDATE    | postgres
+ skeeter    | Mosquito Valentine | INSERT    | postgres
+(6 rows)</code></pre>
+<p>For <a href="https://www.postgresql.org/docs/9.5/static/sql-createview.html#SQL-CREATEVIEW-UPDATABLE-VIEWS" rel="nofollow noopener" target="_blank">more complicated views</a> that don’t meet the requirements for automatically being writable, either the rule system or <em>instead of</em> triggers can do the job to support writes and deletes.</p>
+<h3>EXAMPLE 4 – Summary Values</h3>
+<p>Let’s embellish further and treat the scenario where there is some type of transaction table. It might be a record of hours worked, inventory additions and reductions of warehouse or retail stock, or maybe a check register with debits and credits for each person:</p>
+<pre><code class="language-sql">CREATE TABLE transaction (
+    login_name character varying(9) NOT NULL,
+    post_date date,
+    description character varying,
+    debit money,
+    credit money,
+    FOREIGN KEY (login_name) REFERENCES person (login_name)
+);</code></pre>
+<p>And let’s say that while it is important to retain the transaction history, business rules entail using the net balance in application processing rather than any of the transaction detail. To avoid having to frequently recalculate the balance by summing over all the transactions every time the balance is needed, we can denormalize and keep a current balance value right there in the person table by appending a new column and using a trigger and stored function to maintain the net balance as transactions are inserted:</p>
+<pre><code class="language-sql">ALTER TABLE person ADD COLUMN balance MONEY DEFAULT 0;
+
+CREATE FUNCTION transaction_bit() RETURNS trigger
+    LANGUAGE plpgsql
+    SET SCHEMA 'public'
+    AS $$
+    DECLARE
+    newbalance money;
+    BEGIN
+
+    -- Update person account balance
+
+    UPDATE person 
+        SET balance = 
+            balance + 
+            COALESCE(NEW.debit, 0::money) - 
+            COALESCE(NEW.credit, 0::money) 
+        WHERE login_name = NEW.login_name
+                RETURNING balance INTO newbalance;
+
+    -- Data validation
+
+    IF COALESCE(NEW.debit, 0::money) &lt; 0::money THEN
+        RAISE EXCEPTION 'Debit value must be non-negative';
+    END IF;
+
+    IF COALESCE(NEW.credit, 0::money) &lt; 0::money THEN
+        RAISE EXCEPTION 'Credit value must be non-negative';
+    END IF;
+
+    IF newbalance &lt; 0::money THEN
+        RAISE EXCEPTION 'Insufficient funds: %', NEW;
+    END IF;
+
+    RETURN NEW;
+    END;
+    $$;
+
+
+
+CREATE TRIGGER transaction_bit 
+      BEFORE INSERT ON transaction 
+      FOR EACH ROW EXECUTE PROCEDURE transaction_bit();</code></pre>
+<p>It may seem odd to do the update first in the stored function before validating non-negativity of the debit, credit, and balance values, but in terms of data validation the order does not matter because the body of a trigger function is executed as a database transaction, so if those validation checks fail, then the entire transaction is rolled back when the exception is raised. The advantage of doing the update first is that the update locks the affected row for the duration of the transaction and so any other session attempting to update the same row is blocked until the current transaction completes. The further validation test assures that the resulting balance is non-negative, and the exception information message can include a variable, which in this case will return the offending attempted insert transaction row for debugging.</p>
+<p>To demonstrate that it actually works, here are a few sample entries and a check showing the updated balance at each step:</p>
+<pre><code class="language-sql">SELECT login_name, balance FROM person WHERE login_name = 'dfunny';
+ login_name | balance 
+------------+---------
+ dfunny     |   $0.00
+(1 row)
+
+INSERT INTO transaction (login_name, post_date, description, credit, debit) VALUES ('dfunny', '2018-01-11', 'ACH CREDIT FROM: FINANCE AND ACCO ALLOTMENT : Direct Deposit', NULL, '$2,000.00');
+
+SELECT login_name, balance FROM person WHERE login_name = 'dfunny';
+ login_name |  balance  
+------------+-----------
+ dfunny     | $2,000.00
+(1 row)
+INSERT INTO transaction (login_name, post_date, description, credit, debit) VALUES ('dfunny', '2018-01-17', 'FOR:BGE PAYMENT ACH Withdrawal', '$2780.52', NULL);
+ERROR:  Insufficient funds: (dfunny,2018-01-17,"FOR:BGE PAYMENT ACH Withdrawal",,"$2,780.52")</code></pre>
+<p>Note how the above transaction fails on insufficient funds, i.e., it would produce a negative balance and successfully rolls back. Also note that we returned the entire row with the NEW special variable as extra detail in the error message for debugging.</p>
+<pre><code class="language-sql">SELECT login_name, balance FROM person WHERE login_name = 'dfunny';
+ login_name |  balance  
+------------+-----------
+ dfunny     | $2,000.00
+(1 row)
+
+INSERT INTO transaction (login_name, post_date, description, credit, debit) VALUES ('dfunny', '2018-01-17', 'FOR:BGE PAYMENT ACH Withdrawal', '$278.52', NULL);
+
+SELECT login_name, balance FROM person WHERE login_name = 'dfunny';
+ login_name |  balance  
+------------+-----------
+ dfunny     | $1,721.48
+(1 row)
+
+INSERT INTO transaction (login_name, post_date, description, credit, debit) VALUES ('dfunny', '2018-01-23', 'FOR: ANNE ARUNDEL ONLINE PMT ACH Withdrawal', '$35.29', NULL);
+
+SELECT login_name, balance FROM person WHERE login_name = 'dfunny';
+ login_name |  balance  
+------------+-----------
+ dfunny     | $1,686.19
+(1 row)</code></pre>
+<h3>EXAMPLE 5 - Triggers and Views Redux</h3>
+<p>There is a problem with the above implementation, though, and that is that nothing prevents a malicious user from printing money:</p>
+<pre><code class="language-sql">BEGIN;
+UPDATE person SET balance = '1000000000.00';
+
+SELECT login_name, balance FROM person WHERE login_name = 'dfunny';
+ login_name |      balance      
+------------+-------------------
+ dfunny     | $1,000,000,000.00
+(1 row)
+
+ROLLBACK;</code></pre>
+<p>We have rolled back the theft above for now and will show a way to build in protection against by using a trigger on a view to prevent updates to the balance value.</p>
+<p>We first augment the abridged view from earlier to expose the balance column:</p>
+<pre><code class="language-sql">CREATE OR REPLACE VIEW abridged_person AS
+  SELECT login_name, display_name, abstract, balance FROM person;</code></pre>
+<p>This obviously allows read access to the balance, but it still does not solve the problem because for simple views like this based on a single table, PostgreSQL automatically makes the view writeable:</p>
+<pre><code class="language-sql">BEGIN;
+UPDATE abridged_person SET balance = '1000000000.00';
+SELECT login_name, balance FROM abridged_person WHERE login_name = 'dfunny';
+ login_name |      balance      
+------------+-------------------
+ dfunny     | $1,000,000,000.00
+(1 row)
+
+ROLLBACK;</code></pre>
+<p>We could use a rule, but to illustrate that triggers can be defined on views as well as tables, we will take the latter route and use an <em>instead of update</em> trigger on the view to block unwanted DML, preventing non-transactional changes to the balance value:</p>
+<pre><code class="language-sql">CREATE FUNCTION abridged_person_iut() RETURNS TRIGGER
+    LANGUAGE plpgsql
+    SET search_path TO public
+    AS $$
+    BEGIN
+
+    -- Disallow non-transactional changes to balance
+
+      NEW.balance = OLD.balance;
+    RETURN NEW;
+    END;
+    $$;
+
+CREATE TRIGGER abridged_person_iut
+    INSTEAD OF UPDATE ON abridged_person
+    FOR EACH ROW EXECUTE PROCEDURE abridged_person_iut();</code></pre>
+<p>The above <em>instead of update</em> trigger and stored procedure discards any attempted updates to the balance value and instead forces use of the value present in the database prior to the triggering update statement:</p>
+<pre><code class="language-sql">UPDATE abridged_person SET balance = '1000000000.00';
+
+SELECT login_name, balance FROM abridged_person WHERE login_name = 'dfunny';
+ login_name |  balance  
+------------+-----------
+ dfunny     | $1,686.19
+(1 row)</code></pre>
+<p>which affords protection against un-auditable changes to the balance value.</p>
+<div class="cc_block wp_block5">
+<div class="header">
+<div class="title">Download the Whitepaper Today</div>
+</div>
+<div class="content bg_img">
+<div class="content_inner">
+<div class="image">&nbsp;</div>
+<div class="title">PostgreSQL Management &amp; Automation with ClusterControl</div>
+<div class="text">Learn about what you need to know to deploy, monitor, manage and scale PostgreSQL</div>
+<div class="btn_wr"><a class="btn white" href="https://severalnines.com/resources/whitepapers/postgresql-management-and-automation-clustercontrol">Download the Whitepaper</a></div>
+</div>
+</div>
+</div>
+<h3>EXAMPLE 6 - Elevated Privileges</h3>
+<p>So far all the example code above has been executed at the database owner level by the <em>postgres</em> login role, so any of our anti-tampering efforts could be obviated… that’s just a fact of the database owner super-user privileges.</p>
+<p>Our final example illustrates how triggers and stored functions can be used to allow the execution of code by a non-privileged user at a higher privilege than the logged in session user normally has by employing the SECURITY DEFINER attribute associated with stored functions.</p>
+<p>First, we define a non-privileged login role, <em>eve</em> and confirm that upon instantiation there are no privileges:</p>
+<pre><code class="language-sql">CREATE USER eve;
+dp
+                                  Access privileges
+ Schema |      Name       | Type  | Access privileges | Column privileges | Policies 
+--------+-----------------+-------+-------------------+-------------------+----------
+ public | abridged_person | view  |                   |                   | 
+ public | person          | table |                   |                   | 
+ public | person_audit    | table |                   |                   | 
+ public | transaction     | table |                   |                   | 
+(4 rows)</code></pre>
+<p>We grant read, update, and create privileges on the abridged person view and read and create to the transaction table:</p>
+<pre><code class="language-sql">GRANT SELECT,INSERT, UPDATE ON abridged_person TO eve;
+GRANT SELECT,INSERT ON transaction TO eve;
+dp
+                                      Access privileges
+ Schema |      Name       | Type  |     Access privileges     | Column privileges | Policies 
+--------+-----------------+-------+---------------------------+-------------------+----------
+ public | abridged_person | view  | postgres=arwdDxt/postgres+|                   | 
+        |                 |       | eve=arw/postgres          |                   | 
+ public | person          | table |                           |                   | 
+ public | person_audit    | table |                           |                   | 
+ public | transaction     | table | postgres=arwdDxt/postgres+|                   | 
+        |                 |       | eve=ar/postgres           |                   | 
+(4 rows)</code></pre>
+<p>By way of confirmation we see that <em>eve</em> is denied access to the person and person_audit tables:</p>
+<pre><code class="language-sql">SET SESSION AUTHORIZATION eve;
+
+SELECT * FROM person;
+ERROR:  permission denied for relation person
+
+SELECT * from person_audit;
+ERROR:  permission denied for relation person_audit</code></pre>
+<p>and that she does have appropriate read access to the abridged_person and transaction tables:</p>
+<pre><code class="language-sql">SELECT * FROM abridged_person;
+ login_name |    display_name    |                                                            abstract                                                             |  balance  
+------------+--------------------+---------------------------------------------------------------------------------------------------------------------------------+-----------
+ skeeter    | Mosquito Valentine | Skeeter is Doug's best friend. He is famous in both series for the honking sounds he frequently makes.                          |     $0.00
+ dfunny     | Doug Yancey Funny  | Doug is depicted as an introverted, quiet, insecure and gullible 11 (later 12) year old boy who wants to fit in with the crowd. | $1,686.19
+(2 rows)
+
+SELECT * FROM transaction;
+ login_name | post_date  |                         description                          |   debit   | credit  
+------------+------------+--------------------------------------------------------------+-----------+---------
+ dfunny     | 2018-01-11 | ACH CREDIT FROM: FINANCE AND ACCO ALLOTMENT : Direct Deposit | $2,000.00 |        
+ dfunny     | 2018-01-17 | FOR:BGE PAYMENT ACH Withdrawal                               |           | $278.52
+ dfunny     | 2018-01-23 | FOR: ANNE ARUNDEL ONLINE PMT ACH Withdrawal                  |           |  $35.29
+(3 rows)</code></pre>
+<p>However, even though she has write privilege on the transaction table, a transaction insert attempt fails due to lack of privilege on the <em>person</em> table.</p>
+<pre><code class="language-sql">SET SESSION AUTHORIZATION eve;
+
+INSERT INTO transaction (login_name, post_date, description, credit, debit) VALUES ('dfunny', '2018-01-23', 'ACH CREDIT FROM: FINANCE AND ACCO ALLOTMENT : Direct Deposit', NULL, '$2,000.00');
+ERROR:  permission denied for relation person
+CONTEXT:  SQL statement "UPDATE person 
+        SET balance = 
+            balance + 
+            COALESCE(NEW.debit, 0::money) - 
+            COALESCE(NEW.credit, 0::money) 
+        WHERE login_name = NEW.login_name"
+PL/pgSQL function transaction_bit() line 6 at SQL statement</code></pre>
+<p>The error message context shows this hold up occurs when inside the trigger function DML to update the balance is invoked. The way around this need to deny Eve direct write access to the person table but still effect updates to the person balance in a controlled manner is to add the SECURITY DEFINER attribute to the stored function:</p>
+<pre><code class="language-sql">RESET SESSION AUTHORIZATION;
+ALTER FUNCTION transaction_bit() SECURITY DEFINER;
+
+SET SESSION AUTHORIZATION eve;
+
+INSERT INTO transaction (login_name, post_date, description, credit, debit) VALUES ('dfunny', '2018-01-23', 'ACH CREDIT FROM: FINANCE AND ACCO ALLOTMENT : Direct Deposit', NULL, '$2,000.00');
+
+SELECT * FROM transaction;
+ login_name | post_date  |                         description                          |   debit   | credit  
+------------+------------+--------------------------------------------------------------+-----------+---------
+ dfunny     | 2018-01-11 | ACH CREDIT FROM: FINANCE AND ACCO ALLOTMENT : Direct Deposit | $2,000.00 |        
+ dfunny     | 2018-01-17 | FOR:BGE PAYMENT ACH Withdrawal                               |           | $278.52
+ dfunny     | 2018-01-23 | FOR: ANNE ARUNDEL ONLINE PMT ACH Withdrawal                  |           |  $35.29
+ dfunny     | 2018-01-23 | ACH CREDIT FROM: FINANCE AND ACCO ALLOTMENT : Direct Deposit | $2,000.00 |        
+(4 rows)
+
+SELECT login_name, balance FROM abridged_person WHERE login_name = 'dfunny';
+ login_name |  balance  
+------------+-----------
+ dfunny     | $3,686.19
+(1 row)</code></pre>
+<p>Now the transaction insert succeeds because the stored function is executed with privilege level of its definer, i.e., the postgres user, which does have the appropriate write privilege on the person table.</p>
+<h2>Conclusion</h2>
+<p>As lengthy as this article is, there’s still a lot more to say about triggers and stored functions. What we covered here is a basic introduction with a consideration of pros and cons of triggers and stored functions. We illustrated six use-case examples showing data validation, change logging, deriving values from inserted data, data hiding with simple updatable views, maintaining summary data in separate tables, and allowing safe invocation of code at elevated privilege. Look for a future article on using triggers and stored functions to prevent missing values in sequentially-incrementing (serial) columns.</p>
+						</div>
+						<aside class="sidebar col-12 col-lg-5 col-bleed-x">
+							<div class="sidebar-content">
+							
+								
+							<!-- 							<h5>Categories</h5>
+								<ul class="post-category-list">
+								<li>
+									<a href="https://severalnines.com/category/backup-management/">Backup Management <span> 161</span></a>
+									</li><li>
+									<a href="https://severalnines.com/category/cloud/">Cloud <span> 176</span></a>
+									</li><li>
+									<a href="https://severalnines.com/category/clustercontrol/">ClusterControl <span> 615</span></a>
+									</li><li>
+									<a href="https://severalnines.com/category/configuration-management/">Configuration Management <span> 164</span></a>
+									</li><li>
+									<a href="https://severalnines.com/category/database-general/">Database - General <span> 336</span></a>
+									</li><li>
+									<a href="https://severalnines.com/category/dbaas/">DBaaS <span> 35</span></a>
+									</li><li>
+									<a href="https://severalnines.com/category/deployment-scaling/">Deployment &amp; Scaling <span> 430</span></a>
+									</li><li>
+									<a href="https://severalnines.com/category/disaster-recovery/">Disaster recovery <span> 1</span></a>
+									</li><li>
+									<a href="https://severalnines.com/category/hybrid-operations/">Hybrid Operations <span> 1</span></a>
+									</li><li>
+									<a href="https://severalnines.com/category/hybrid-cloud/">Hybrid-cloud <span> 4</span></a>
+									</li><li>
+									<a href="https://severalnines.com/category/industry-news-events/">Industry News &amp; Events <span> 204</span></a>
+									</li><li>
+									<a href="https://severalnines.com/category/logging/">Logging <span> 1</span></a>
+									</li><li>
+									<a href="https://severalnines.com/category/monitoring-alerting/">Monitoring &amp; Alerting <span> 166</span></a>
+									</li><li>
+									<a href="https://severalnines.com/category/multi-cloud/">Multi-cloud <span> 5</span></a>
+									</li><li>
+									<a href="https://severalnines.com/category/operational-reporting/">Operational Reporting <span> 12</span></a>
+									</li><li>
+									<a href="https://severalnines.com/category/performance-management/">Performance Management <span> 256</span></a>
+									</li><li>
+									<a href="https://severalnines.com/category/recovery-repair/">Recovery &amp; Repair <span> 122</span></a>
+									</li><li>
+									<a href="https://severalnines.com/category/security-compliance/">Security &amp; Compliance <span> 141</span></a>
+									</li><li>
+									<a href="https://severalnines.com/category/sovereign-dbaas/">Sovereign DBaaS <span> 12</span></a>
+									</li><li>
+									<a href="https://severalnines.com/category/upgrades-patches/">Upgrades &amp; Patches <span> 84</span></a>
+									</li>								</ul>
+							 -->
+												<h5>Category</h5>
+					<ul class="post-category-list">
+						<li><a href="https://severalnines.com/category/configuration-management/">Configuration Management</a></li><li><a href="https://severalnines.com/related-technology/postgresql/">PostgreSQL</a></li>					</ul>
+										<div class="post-subs-box">
+							<h3>Subscribe to our newsletter</h3>
+							<p>You’ll get two emails every month full of fresh database ops tips and strategic considerations.</p>
+							<script type="text/javascript" src="data:text/javascript;base64,dmFyIGdmb3JtO2dmb3JtfHwoZG9jdW1lbnQuYWRkRXZlbnRMaXN0ZW5lcigiZ2Zvcm1fbWFpbl9zY3JpcHRzX2xvYWRlZCIsZnVuY3Rpb24oKXtnZm9ybS5zY3JpcHRzTG9hZGVkPSEwfSksd2luZG93LmFkZEV2ZW50TGlzdGVuZXIoIkRPTUNvbnRlbnRMb2FkZWQiLGZ1bmN0aW9uKCl7Z2Zvcm0uZG9tTG9hZGVkPSEwfSksZ2Zvcm09e2RvbUxvYWRlZDohMSxzY3JpcHRzTG9hZGVkOiExLGluaXRpYWxpemVPbkxvYWRlZDpmdW5jdGlvbihvKXtnZm9ybS5kb21Mb2FkZWQmJmdmb3JtLnNjcmlwdHNMb2FkZWQ/bygpOiFnZm9ybS5kb21Mb2FkZWQmJmdmb3JtLnNjcmlwdHNMb2FkZWQ/d2luZG93LmFkZEV2ZW50TGlzdGVuZXIoIkRPTUNvbnRlbnRMb2FkZWQiLG8pOmRvY3VtZW50LmFkZEV2ZW50TGlzdGVuZXIoImdmb3JtX21haW5fc2NyaXB0c19sb2FkZWQiLG8pfSxob29rczp7YWN0aW9uOnt9LGZpbHRlcjp7fX0sYWRkQWN0aW9uOmZ1bmN0aW9uKG8sbixyLHQpe2dmb3JtLmFkZEhvb2soImFjdGlvbiIsbyxuLHIsdCl9LGFkZEZpbHRlcjpmdW5jdGlvbihvLG4scix0KXtnZm9ybS5hZGRIb29rKCJmaWx0ZXIiLG8sbixyLHQpfSxkb0FjdGlvbjpmdW5jdGlvbihvKXtnZm9ybS5kb0hvb2soImFjdGlvbiIsbyxhcmd1bWVudHMpfSxhcHBseUZpbHRlcnM6ZnVuY3Rpb24obyl7cmV0dXJuIGdmb3JtLmRvSG9vaygiZmlsdGVyIixvLGFyZ3VtZW50cyl9LHJlbW92ZUFjdGlvbjpmdW5jdGlvbihvLG4pe2dmb3JtLnJlbW92ZUhvb2soImFjdGlvbiIsbyxuKX0scmVtb3ZlRmlsdGVyOmZ1bmN0aW9uKG8sbixyKXtnZm9ybS5yZW1vdmVIb29rKCJmaWx0ZXIiLG8sbixyKX0sYWRkSG9vazpmdW5jdGlvbihvLG4scix0LGkpe251bGw9PWdmb3JtLmhvb2tzW29dW25dJiYoZ2Zvcm0uaG9va3Nbb11bbl09W10pO3ZhciBlPWdmb3JtLmhvb2tzW29dW25dO251bGw9PWkmJihpPW4rIl8iK2UubGVuZ3RoKSxnZm9ybS5ob29rc1tvXVtuXS5wdXNoKHt0YWc6aSxjYWxsYWJsZTpyLHByaW9yaXR5OnQ9bnVsbD09dD8xMDp0fSl9LGRvSG9vazpmdW5jdGlvbihuLG8scil7dmFyIHQ7aWYocj1BcnJheS5wcm90b3R5cGUuc2xpY2UuY2FsbChyLDEpLG51bGwhPWdmb3JtLmhvb2tzW25dW29dJiYoKG89Z2Zvcm0uaG9va3Nbbl1bb10pLnNvcnQoZnVuY3Rpb24obyxuKXtyZXR1cm4gby5wcmlvcml0eS1uLnByaW9yaXR5fSksby5mb3JFYWNoKGZ1bmN0aW9uKG8peyJmdW5jdGlvbiIhPXR5cGVvZih0PW8uY2FsbGFibGUpJiYodD13aW5kb3dbdF0pLCJhY3Rpb24iPT1uP3QuYXBwbHkobnVsbCxyKTpyWzBdPXQuYXBwbHkobnVsbCxyKX0pKSwiZmlsdGVyIj09bilyZXR1cm4gclswXX0scmVtb3ZlSG9vazpmdW5jdGlvbihvLG4sdCxpKXt2YXIgcjtudWxsIT1nZm9ybS5ob29rc1tvXVtuXSYmKHI9KHI9Z2Zvcm0uaG9va3Nbb11bbl0pLmZpbHRlcihmdW5jdGlvbihvLG4scil7cmV0dXJuISEobnVsbCE9aSYmaSE9by50YWd8fG51bGwhPXQmJnQhPW8ucHJpb3JpdHkpfSksZ2Zvcm0uaG9va3Nbb11bbl09cil9fSk7" data-rocket-status="executed">var gform;gform||(document.addEventListener("gform_main_scripts_loaded",function(){gform.scriptsLoaded=!0}),window.addEventListener("DOMContentLoaded",function(){gform.domLoaded=!0}),gform={domLoaded:!1,scriptsLoaded:!1,initializeOnLoaded:function(o){gform.domLoaded&&gform.scriptsLoaded?o():!gform.domLoaded&&gform.scriptsLoaded?window.addEventListener("DOMContentLoaded",o):document.addEventListener("gform_main_scripts_loaded",o)},hooks:{action:{},filter:{}},addAction:function(o,n,r,t){gform.addHook("action",o,n,r,t)},addFilter:function(o,n,r,t){gform.addHook("filter",o,n,r,t)},doAction:function(o){gform.doHook("action",o,arguments)},applyFilters:function(o){return gform.doHook("filter",o,arguments)},removeAction:function(o,n){gform.removeHook("action",o,n)},removeFilter:function(o,n,r){gform.removeHook("filter",o,n,r)},addHook:function(o,n,r,t,i){null==gform.hooks[o][n]&&(gform.hooks[o][n]=[]);var e=gform.hooks[o][n];null==i&&(i=n+"_"+e.length),gform.hooks[o][n].push({tag:i,callable:r,priority:t=null==t?10:t})},doHook:function(n,o,r){var t;if(r=Array.prototype.slice.call(r,1),null!=gform.hooks[n][o]&&((o=gform.hooks[n][o]).sort(function(o,n){return o.priority-n.priority}),o.forEach(function(o){"function"!=typeof(t=o.callable)&&(t=window[t]),"action"==n?t.apply(null,r):r[0]=t.apply(null,r)})),"filter"==n)return r[0]},removeHook:function(o,n,t,i){var r;null!=gform.hooks[o][n]&&(r=(r=gform.hooks[o][n]).filter(function(o,n,r){return!!(null!=i&&i!=o.tag||null!=t&&t!=o.priority)}),gform.hooks[o][n]=r)}});</script>
+                <div class="gf_browser_chrome gform_wrapper gravity-theme gform-theme--no-framework" data-form-theme="gravity-theme" data-form-index="0" id="gform_wrapper_1"><div id="gf_1" class="gform_anchor" tabindex="-1"></div>
+                        <div class="gform_heading">
+                            <p class="gform_description"></p>
+                        </div><form method="post" enctype="multipart/form-data" target="gform_ajax_frame_1" id="gform_1" action="https://severalnines.com/blog/postgresql-triggers-and-stored-function-basics#gf_1" data-formid="1" novalidate="">
+                        <div class="gform-body gform_body"><div id="gform_fields_1" class="gform_fields top_label form_sublabel_below description_below"><div id="field_1_1" class="gfield gfield--type-email gfield--width-full field_sublabel_below gfield--no-description field_description_below hidden_label gfield_visibility_visible" data-js-reload="field_1_1"><label class="gfield_label gform-field-label" for="input_1_1">Email</label><div class="ginput_container ginput_container_email">
+                            <input name="input_1" id="input_1_1" type="email" value="" class="large" placeholder="Email" aria-invalid="false" fdprocessedid="zdqyji">
+                        </div></div><div id="field_1_3" class="gfield gfield--type-text gfield--width-full field_sublabel_below gfield--no-description field_description_below gfield_visibility_hidden" data-js-reload="field_1_3"><div class="admin-hidden-markup"><i class="gform-icon gform-icon--hidden"></i><span>Hidden</span></div><label class="gfield_label gform-field-label" for="input_1_3">State</label><div class="ginput_container ginput_container_text"><input name="input_3" id="input_1_3" type="text" value="" class="large" aria-invalid="false"> </div></div><div id="field_1_2" class="gfield gfield--type-hidden gfield--width-full gform_hidden field_sublabel_below gfield--no-description field_description_below gfield_visibility_visible" data-js-reload="field_1_2"><div class="ginput_container ginput_container_text"><input name="input_2" id="input_1_2" type="hidden" class="gform_hidden" aria-invalid="false" value=""></div></div><div id="field_1_4" class="gfield gfield--type-captcha field_sublabel_below gfield--no-description field_description_below hidden_label gfield_visibility_visible" data-js-reload="field_1_4"><label class="gfield_label gform-field-label" for="input_1_4">CAPTCHA</label><div id="input_1_4_0" class="ginput_container ginput_recaptcha gform-initialized" data-sitekey="6LeVGEAUAAAAANOt9l9-3MmtL4uormHOIttoKf_O" data-theme="light" data-tabindex="0" data-badge=""><div style="width: 304px; height: 78px;"><div><iframe title="reCAPTCHA" width="304" height="78" role="presentation" name="a-bfcweaad8vf6" frameborder="0" scrolling="no" sandbox="allow-forms allow-popups allow-same-origin allow-scripts allow-top-navigation allow-modals allow-popups-to-escape-sandbox allow-storage-access-by-user-activation" src="./PostgreSQL Triggers and Stored Function Basics _ Severalnines_files/anchor.html"></iframe></div><textarea id="g-recaptcha-response" name="g-recaptcha-response" class="g-recaptcha-response" style="width: 250px; height: 40px; border: 1px solid rgb(193, 193, 193); margin: 10px 25px; padding: 0px; resize: none; display: none;"></textarea></div></div></div></div></div>
+        <div class="gform_footer top_label"> <input type="submit" id="gform_submit_button_1" class="gform_button button" value="Subscribe" onclick="if(window[&quot;gf_submitting_1&quot;]){return false;}  if( !jQuery(&quot;#gform_1&quot;)[0].checkValidity || jQuery(&quot;#gform_1&quot;)[0].checkValidity()){window[&quot;gf_submitting_1&quot;]=true;}  " onkeypress="if( event.keyCode == 13 ){ if(window[&quot;gf_submitting_1&quot;]){return false;} if( !jQuery(&quot;#gform_1&quot;)[0].checkValidity || jQuery(&quot;#gform_1&quot;)[0].checkValidity()){window[&quot;gf_submitting_1&quot;]=true;}  jQuery(&quot;#gform_1&quot;).trigger(&quot;submit&quot;,[true]); }" fdprocessedid="vhezxa"> <input type="hidden" name="gform_ajax" value="form_id=1&amp;title=&amp;description=1&amp;tabindex=0&amp;theme=data-form-theme=&#39;gravity-theme&#39;">
+            <input type="hidden" class="gform_hidden" name="is_submit_1" value="1">
+            <input type="hidden" class="gform_hidden" name="gform_submit" value="1">
+            
+            <input type="hidden" class="gform_hidden" name="gform_unique_id" value="">
+            <input type="hidden" class="gform_hidden" name="state_1" value="WyJbXSIsIjk1OWIxODI3MGFjMmFlNzNjMGFjYWQwNDE1NzBkOTczIl0=">
+            <input type="hidden" class="gform_hidden" name="gform_target_page_number_1" id="gform_target_page_number_1" value="0">
+            <input type="hidden" class="gform_hidden" name="gform_source_page_number_1" id="gform_source_page_number_1" value="1">
+            <input type="hidden" name="gform_field_values" value="">
+            
+        </div>
+                        </form>
+                        </div><span id="gform_visibility_test_1"></span>
+		                <iframe style="display:none;width:0px;height:0px;" name="gform_ajax_frame_1" id="gform_ajax_frame_1" title="This iframe contains the logic required to handle Ajax powered Gravity Forms." src="./PostgreSQL Triggers and Stored Function Basics _ Severalnines_files/saved_resource(2).html"></iframe>
+		                <script type="text/javascript">
+gform.initializeOnLoaded( function() {gformInitSpinner( 1, 'https://severalnines.com/wp-content/plugins/gravityforms/images/spinner.svg', true );jQuery('#gform_ajax_frame_1').on('load',function(){var contents = jQuery(this).contents().find('*').html();var is_postback = contents.indexOf('GF_AJAX_POSTBACK') >= 0;if(!is_postback){return;}var form_content = jQuery(this).contents().find('#gform_wrapper_1');var is_confirmation = jQuery(this).contents().find('#gform_confirmation_wrapper_1').length > 0;var is_redirect = contents.indexOf('gformRedirect(){') >= 0;var is_form = form_content.length > 0 && ! is_redirect && ! is_confirmation;var mt = parseInt(jQuery('html').css('margin-top'), 10) + parseInt(jQuery('body').css('margin-top'), 10) + 100;if(is_form){jQuery('#gform_wrapper_1').html(form_content.html());if(form_content.hasClass('gform_validation_error')){jQuery('#gform_wrapper_1').addClass('gform_validation_error');} else {jQuery('#gform_wrapper_1').removeClass('gform_validation_error');}setTimeout( function() { /* delay the scroll by 50 milliseconds to fix a bug in chrome */ jQuery(document).scrollTop(jQuery('#gform_wrapper_1').offset().top - mt); }, 50 );if(window['gformInitDatepicker']) {gformInitDatepicker();}if(window['gformInitPriceFields']) {gformInitPriceFields();}var current_page = jQuery('#gform_source_page_number_1').val();gformInitSpinner( 1, 'https://severalnines.com/wp-content/plugins/gravityforms/images/spinner.svg', true );jQuery(document).trigger('gform_page_loaded', [1, current_page]);window['gf_submitting_1'] = false;}else if(!is_redirect){var confirmation_content = jQuery(this).contents().find('.GF_AJAX_POSTBACK').html();if(!confirmation_content){confirmation_content = contents;}setTimeout(function(){jQuery('#gform_wrapper_1').replaceWith(confirmation_content);jQuery(document).scrollTop(jQuery('#gf_1').offset().top - mt);jQuery(document).trigger('gform_confirmation_loaded', [1]);window['gf_submitting_1'] = false;wp.a11y.speak(jQuery('#gform_confirmation_message_1').text());}, 50);}else{jQuery('#gform_1').append(contents);if(window['gformRedirect']) {gformRedirect();}}        const gformWrapperDiv = document.getElementById( "gform_wrapper_1" );        if ( gformWrapperDiv ) {            const visibilitySpan = document.createElement( "span" );            visibilitySpan.id = "gform_visibility_test_1";            gformWrapperDiv.insertAdjacentElement( "afterend", visibilitySpan );        }        const visibilityTestDiv = document.getElementById( "gform_visibility_test_1" );        let postRenderFired = false;                function triggerPostRender() {            if ( postRenderFired ) {                return;            }            postRenderFired = true;            jQuery( document ).trigger( 'gform_post_render', [1, current_page] );            gform.utils.trigger( { event: 'gform/postRender', native: false, data: { formId: 1, currentPage: current_page } } );            if ( visibilityTestDiv ) {                visibilityTestDiv.parentNode.removeChild( visibilityTestDiv );            }        }        function debounce( func, wait, immediate ) {            var timeout;            return function() {                var context = this, args = arguments;                var later = function() {                    timeout = null;                    if ( !immediate ) func.apply( context, args );                };                var callNow = immediate && !timeout;                clearTimeout( timeout );                timeout = setTimeout( later, wait );                if ( callNow ) func.apply( context, args );            };        }        const debouncedTriggerPostRender = debounce( function() {            triggerPostRender();        }, 200 );        if ( visibilityTestDiv && visibilityTestDiv.offsetParent === null ) {            const observer = new MutationObserver( ( mutations ) => {                mutations.forEach( ( mutation ) => {                    if ( mutation.type === 'attributes' && visibilityTestDiv.offsetParent !== null ) {                        debouncedTriggerPostRender();                        observer.disconnect();                    }                });            });            observer.observe( document.body, {                attributes: true,                childList: false,                subtree: true,                attributeFilter: [ 'style', 'class' ],            });        } else {            triggerPostRender();        }    } );} );
+</script>
+						</div>	
+							</div>
+						</aside>
+					</div>
+						
+							<section class="recommended-posts">
+				<div class="container">
+					<div class="row">
+						<div class="col-md-12">
+							<h3>Recommended</h3>
+						</div>
+					</div>
+					<div class="row">
+											<div class="col-md-6 col-xl-3">
+							<div class="post-card">
+								<div class="post-title">
+			                        <h4>
+			        					<a href="https://severalnines.com/blog/proactive-mongodb-monitoring-developer-studioadvisors-angle/" rel="bookmark" title="Proactive MongoDB Monitoring (Developer Studio/Advisors angle)">
+			        						Proactive MongoDB Monitoring (Developer Studio/Advisors angle)			        					</a>
+			        				</h4>
+			        			</div>
+			        			<div class="post-texts">
+				                    <div class="author-meta">
+				                        August 6, 2021 Agus				     					Syafaat				                    </div>
+				                    
+				                </div>
+				                <div class="post-image">
+				                    <a href="https://severalnines.com/blog/proactive-mongodb-monitoring-developer-studioadvisors-angle/">
+				                        <img width="2732" height="4096" src="./PostgreSQL Triggers and Stored Function Basics _ Severalnines_files/annie-spratt-MChSQHxGZrQ-unsplash.png">
+				                        <!-- <div class="all_resources_img" style="background: url('https://severalnines.com/wp-content/uploads/2021/09/annie-spratt-MChSQHxGZrQ-unsplash.png') no-repeat;"></div> -->
+				                    </a>
+				                </div>
+				            </div>
+			           	</div>
+									<div class="col-md-6 col-xl-3">
+							<div class="post-card">
+								<div class="post-title">
+			                        <h4>
+			        					<a href="https://severalnines.com/blog/performance-tuning-redis/" rel="bookmark" title="Performance Tuning for Redis">
+			        						Performance Tuning for Redis			        					</a>
+			        				</h4>
+			        			</div>
+			        			<div class="post-texts">
+				                    <div class="author-meta">
+				                        July 26, 2021 Paul				     					Namuag				                    </div>
+				                    
+				                </div>
+				                <div class="post-image">
+				                    <a href="https://severalnines.com/blog/performance-tuning-redis/">
+				                        <img width="1200" height="680" src="./PostgreSQL Triggers and Stored Function Basics _ Severalnines_files/BLOG-performance-tuning-for-redis.png">
+				                        <!-- <div class="all_resources_img" style="background: url('https://severalnines.com/wp-content/uploads/2023/12/BLOG-performance-tuning-for-redis.png') no-repeat;"></div> -->
+				                    </a>
+				                </div>
+				            </div>
+			           	</div>
+									<div class="col-md-6 col-xl-3">
+							<div class="post-card">
+								<div class="post-title">
+			                        <h4>
+			        					<a href="https://severalnines.com/blog/acl-using-s9s-cli/" rel="bookmark" title="ACL using s9s CLI">
+			        						ACL using s9s CLI			        					</a>
+			        				</h4>
+			        			</div>
+			        			<div class="post-texts">
+				                    <div class="author-meta">
+				                        July 22, 2021 Zamani				     					Rahman				                    </div>
+				                    
+				                </div>
+				                <div class="post-image">
+				                    <a href="https://severalnines.com/blog/acl-using-s9s-cli/">
+				                        <img width="4096" height="2731" src="./PostgreSQL Triggers and Stored Function Basics _ Severalnines_files/brooke-cagle-WHWYBmtn3_0-unsplash.png">
+				                        <!-- <div class="all_resources_img" style="background: url('https://severalnines.com/wp-content/uploads/2021/09/brooke-cagle-WHWYBmtn3_0-unsplash.png') no-repeat;"></div> -->
+				                    </a>
+				                </div>
+				            </div>
+			           	</div>
+									<div class="col-md-6 col-xl-3">
+							<div class="post-card">
+								<div class="post-title">
+			                        <h4>
+			        					<a href="https://severalnines.com/blog/installing-redis-cluster-cluster-mode-enabled-auto-failover/" rel="bookmark" title="Installing Redis Cluster (cluster mode enabled) with auto failover">
+			        						Installing Redis Cluster (cluster mode enabled) with auto failover			        					</a>
+			        				</h4>
+			        			</div>
+			        			<div class="post-texts">
+				                    <div class="author-meta">
+				                        July 6, 2021 Sebastian				     					Insausti				                    </div>
+				                    
+				                </div>
+				                <div class="post-image">
+				                    <a href="https://severalnines.com/blog/installing-redis-cluster-cluster-mode-enabled-auto-failover/">
+				                        <img width="1920" height="1280" src="./PostgreSQL Triggers and Stored Function Basics _ Severalnines_files/f0bb8f0b659afb9b442d36c9fd881047-1.jpg">
+				                        <!-- <div class="all_resources_img" style="background: url('https://severalnines.com/wp-content/uploads/2022/05/f0bb8f0b659afb9b442d36c9fd881047-1.jpg') no-repeat;"></div> -->
+				                    </a>
+				                </div>
+				            </div>
+			           	</div>
+			</div>
+				</div>
+			</section>
+	<section class="post-cta-block">
+		<div class="container">
+			<div class="row">
+				<div class="col-md-12">
+					<h2>
+						Subscribe below to be notified of <strong> fresh posts</strong>
+					</h2>
+					<!-- <div class="text- acf-button-block">
+						<a class="btn white btn-block " href="#the_newsletter" title="Learn how">
+							Learn how		</a>
+					</div> -->
+				</div>
+			</div>
+		</div>
+	</section>
+		</div><!-- .entry-content -->
+	</article><!-- #post-13469 -->
+</main><!-- #main -->
+
+<footer class="site-footer">
+	<div class="wrapper-mid">
+		<div class="wrapper">
+			<div class="site-footer__mid">
+				<div class="column logo socialmedia">
+					<a class="logo" href="https://severalnines.com/">
+						<img width="800" height="180" class="lazyloaded" src="./PostgreSQL Triggers and Stored Function Basics _ Severalnines_files/severalnines_logo_white.svg" alt="severalnines white logo">
+					</a>
+											<ul class="severalnines-socialmedia">
+															<li>
+									<a target="_blank" class="icon-Twitter" href="https://twitter.com/severalnines/" title="Twitter">
+										<span class="screen-reader-text">Twitter</span>
+									</a>
+								</li>
+																<li>
+									<a target="_blank" class="icon-Facebook" href="https://www.facebook.com/severalnines/" title="Facebook">
+										<span class="screen-reader-text">Facebook</span>
+									</a>
+								</li>
+																<li>
+									<a target="_blank" class="icon-Linkedin" href="https://www.linkedin.com/company/severalnines/" title="Linkedin">
+										<span class="screen-reader-text">Linkedin</span>
+									</a>
+								</li>
+																<li>
+									<a target="_blank" class="icon-Youtube" href="https://www.youtube.com/c/Severalnines/" title="Youtube">
+										<span class="screen-reader-text">Youtube</span>
+									</a>
+								</li>
+																<li>
+									<a target="_blank" class="icon-Slideshare" href="https://www.slideshare.net/severalnines/" title="Slideshare">
+										<span class="screen-reader-text">Slideshare</span>
+									</a>
+								</li>
+																<li>
+									<a target="_blank" class="icon-RSS" href="https://severalnines.com/feed/" title="RSS">
+										<span class="screen-reader-text">RSS</span>
+									</a>
+								</li>
+														</ul>
+											</div>
+					<div class="column footer-menu">
+					<ul id="menu-footer" class="menu-footer"><li id="menu-item-1117" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-1117"><a>Products</a>
+<ul class="sub-menu">
+	<li id="menu-item-31765" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-31765"><a href="https://severalnines.com/clustercontrol/">ClusterControl</a></li>
+	<li id="menu-item-32488" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-32488"><a href="https://severalnines.com/ccx/">CCX</a></li>
+</ul>
+</li>
+<li id="menu-item-24957" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-24957"><a>CC</a>
+<ul class="sub-menu">
+	<li id="menu-item-31770" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-31770"><a href="https://severalnines.com/clustercontrol/databases/postgresql/">PostgreSQL</a></li>
+	<li id="menu-item-31773" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-31773"><a href="https://severalnines.com/clustercontrol/databases/mongodb/">MongoDB</a></li>
+	<li id="menu-item-31775" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-31775"><a href="https://severalnines.com/clustercontrol/databases/timescaledb/">TimescaleDB</a></li>
+	<li id="menu-item-31779" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-31779"><a href="https://severalnines.com/clustercontrol/databases/elasticsearch/">Elasticsearch</a></li>
+	<li id="menu-item-31783" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-31783"><a href="https://severalnines.com/clustercontrol/databases/mariadb/">MariaDB</a></li>
+	<li id="menu-item-31789" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-31789"><a href="https://severalnines.com/clustercontrol/databases/mysql/">MySQL</a></li>
+	<li id="menu-item-31806" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-31806"><a href="https://severalnines.com/clustercontrol/databases/mysql-galera-cluster/">MySQL Galera</a></li>
+	<li id="menu-item-31798" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-31798"><a href="https://severalnines.com/clustercontrol/databases/redis/">Redis</a></li>
+	<li id="menu-item-31803" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-31803"><a href="https://severalnines.com/clustercontrol/databases/sql-server/">SQLServer for Linux</a></li>
+</ul>
+</li>
+<li id="menu-item-24930" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-24930"><a>Solutions</a>
+<ul class="sub-menu">
+	<li id="menu-item-24931" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-24931"><a href="https://severalnines.com/clustercontrol/solutions/multi-cloud/">Multi cloud</a></li>
+	<li id="menu-item-24932" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-24932"><a href="https://severalnines.com/clustercontrol/solutions/hybrid-cloud/">Hybrid cloud</a></li>
+	<li id="menu-item-24933" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-24933"><a href="https://severalnines.com/clustercontrol/solutions/disaster-recovery/">Disaster recovery</a></li>
+	<li id="menu-item-26559" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-26559"><a href="https://severalnines.com/ccx/solutions/cloud-service-providers/">Cloud Service Providers (CSPs)</a></li>
+</ul>
+</li>
+<li id="menu-item-1444" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-1444"><a>Developers</a>
+<ul class="sub-menu">
+	<li id="menu-item-1445" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-1445"><a href="https://docs.severalnines.com/">Docs</a></li>
+	<li id="menu-item-32373" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-32373"><a href="https://severalnines.com/support/">Support</a></li>
+	<li id="menu-item-1451" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-1451"><a href="https://sovereign-dbaas.slack.com/join/shared_invite/zt-b15k9477-jLllD6qJOUm3bGnOWynVig">Community</a></li>
+	<li id="menu-item-1447" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-1447"><a href="https://severalnines.com/clustercontrol/training/">CC Training</a></li>
+	<li id="menu-item-1449" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-1449"><a href="https://severalnines.com/clustercontrol/certification/">CC Certification</a></li>
+</ul>
+</li>
+<li id="menu-item-24934" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-24934"><a>Corporate</a>
+<ul class="sub-menu">
+	<li id="menu-item-32378" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-32378"><a href="https://severalnines.com/about-us/">About us</a></li>
+	<li id="menu-item-32399" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-32399"><a href="https://severalnines.com/security-compliance/">Compliance</a></li>
+	<li id="menu-item-32364" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-32364"><a href="https://severalnines.com/contact/">Contact us</a></li>
+	<li id="menu-item-32382" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-32382"><a href="https://severalnines.com/career/">Careers</a></li>
+	<li id="menu-item-32535" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-32535"><a href="https://severalnines.com/partners/">Partners</a></li>
+	<li id="menu-item-33385" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-33385"><a href="https://info.severalnines.com/brand_book">Brand Guide</a></li>
+</ul>
+</li>
+</ul>				</div>
+				<div class="column subscribe" id="the_newsletter">
+											<h3>The Planet9s newsletter</h3>
+																<p>Join for inspiration, news about database stuff, this, that and more.</p>
+																<div class="iframe-wrapper">
+							
+                <div class="gf_browser_chrome gform_wrapper gravity-theme gform-theme--no-framework" data-form-theme="gravity-theme" data-form-index="1" id="gform_wrapper_1"><div id="gf_1" class="gform_anchor" tabindex="-1"></div>
+                        <div class="gform_heading">
+                            <p class="gform_description"></p>
+                        </div><form method="post" enctype="multipart/form-data" id="gform_1" action="https://severalnines.com/blog/postgresql-triggers-and-stored-function-basics#gf_1" data-formid="1" novalidate="">
+                        <div class="gform-body gform_body"><div id="gform_fields_1" class="gform_fields top_label form_sublabel_below description_below"><div id="field_1_1" class="gfield gfield--type-email gfield--width-full field_sublabel_below gfield--no-description field_description_below hidden_label gfield_visibility_visible" data-js-reload="field_1_1"><label class="gfield_label gform-field-label" for="input_1_1">Email</label><div class="ginput_container ginput_container_email">
+                            <input name="input_1" id="input_1_1" type="email" value="" class="large" placeholder="Email" aria-invalid="false" fdprocessedid="x2yo2l">
+                        </div></div><div id="field_1_3" class="gfield gfield--type-text gfield--width-full field_sublabel_below gfield--no-description field_description_below gfield_visibility_hidden" data-js-reload="field_1_3"><div class="admin-hidden-markup"><i class="gform-icon gform-icon--hidden"></i><span>Hidden</span></div><label class="gfield_label gform-field-label" for="input_1_3">State</label><div class="ginput_container ginput_container_text"><input name="input_3" id="input_1_3" type="text" value="" class="large" aria-invalid="false"> </div></div><div id="field_1_2" class="gfield gfield--type-hidden gfield--width-full gform_hidden field_sublabel_below gfield--no-description field_description_below gfield_visibility_visible" data-js-reload="field_1_2"><div class="ginput_container ginput_container_text"><input name="input_2" id="input_1_2" type="hidden" class="gform_hidden" aria-invalid="false" value=""></div></div><div id="field_1_4" class="gfield gfield--type-captcha field_sublabel_below gfield--no-description field_description_below hidden_label gfield_visibility_visible" data-js-reload="field_1_4"><label class="gfield_label gform-field-label" for="input_1_4">CAPTCHA</label><div id="input_1_4_1" class="ginput_container ginput_recaptcha gform-initialized" data-sitekey="6LeVGEAUAAAAANOt9l9-3MmtL4uormHOIttoKf_O" data-theme="light" data-tabindex="0" data-badge=""><div style="width: 304px; height: 78px;"><div><iframe title="reCAPTCHA" width="304" height="78" role="presentation" name="a-ikseqx21ixgt" frameborder="0" scrolling="no" sandbox="allow-forms allow-popups allow-same-origin allow-scripts allow-top-navigation allow-modals allow-popups-to-escape-sandbox allow-storage-access-by-user-activation" src="./PostgreSQL Triggers and Stored Function Basics _ Severalnines_files/anchor(1).html"></iframe></div><textarea id="g-recaptcha-response-1" name="g-recaptcha-response" class="g-recaptcha-response" style="width: 250px; height: 40px; border: 1px solid rgb(193, 193, 193); margin: 10px 25px; padding: 0px; resize: none; display: none;"></textarea></div><iframe style="display: none;" src="./PostgreSQL Triggers and Stored Function Basics _ Severalnines_files/saved_resource(3).html"></iframe></div></div></div></div>
+        <div class="gform_footer top_label"> <input type="submit" id="gform_submit_button_1" class="gform_button button" value="Subscribe" onclick="if(window[&quot;gf_submitting_1&quot;]){return false;}  if( !jQuery(&quot;#gform_1&quot;)[0].checkValidity || jQuery(&quot;#gform_1&quot;)[0].checkValidity()){window[&quot;gf_submitting_1&quot;]=true;}  " onkeypress="if( event.keyCode == 13 ){ if(window[&quot;gf_submitting_1&quot;]){return false;} if( !jQuery(&quot;#gform_1&quot;)[0].checkValidity || jQuery(&quot;#gform_1&quot;)[0].checkValidity()){window[&quot;gf_submitting_1&quot;]=true;}  jQuery(&quot;#gform_1&quot;).trigger(&quot;submit&quot;,[true]); }" fdprocessedid="41heq"> 
+            <input type="hidden" class="gform_hidden" name="is_submit_1" value="1">
+            <input type="hidden" class="gform_hidden" name="gform_submit" value="1">
+            
+            <input type="hidden" class="gform_hidden" name="gform_unique_id" value="">
+            <input type="hidden" class="gform_hidden" name="state_1" value="WyJbXSIsIjk1OWIxODI3MGFjMmFlNzNjMGFjYWQwNDE1NzBkOTczIl0=">
+            <input type="hidden" class="gform_hidden" name="gform_target_page_number_1" id="gform_target_page_number_1" value="0">
+            <input type="hidden" class="gform_hidden" name="gform_source_page_number_1" id="gform_source_page_number_1" value="1">
+            <input type="hidden" name="gform_field_values" value="">
+            
+        </div>
+                        </form>
+                        </div><script type="text/javascript">
+gform.initializeOnLoaded( function() {gformInitSpinner( 1, 'https://severalnines.com/wp-content/plugins/gravityforms/images/spinner.svg', true );jQuery('#gform_ajax_frame_1').on('load',function(){var contents = jQuery(this).contents().find('*').html();var is_postback = contents.indexOf('GF_AJAX_POSTBACK') >= 0;if(!is_postback){return;}var form_content = jQuery(this).contents().find('#gform_wrapper_1');var is_confirmation = jQuery(this).contents().find('#gform_confirmation_wrapper_1').length > 0;var is_redirect = contents.indexOf('gformRedirect(){') >= 0;var is_form = form_content.length > 0 && ! is_redirect && ! is_confirmation;var mt = parseInt(jQuery('html').css('margin-top'), 10) + parseInt(jQuery('body').css('margin-top'), 10) + 100;if(is_form){jQuery('#gform_wrapper_1').html(form_content.html());if(form_content.hasClass('gform_validation_error')){jQuery('#gform_wrapper_1').addClass('gform_validation_error');} else {jQuery('#gform_wrapper_1').removeClass('gform_validation_error');}setTimeout( function() { /* delay the scroll by 50 milliseconds to fix a bug in chrome */ jQuery(document).scrollTop(jQuery('#gform_wrapper_1').offset().top - mt); }, 50 );if(window['gformInitDatepicker']) {gformInitDatepicker();}if(window['gformInitPriceFields']) {gformInitPriceFields();}var current_page = jQuery('#gform_source_page_number_1').val();gformInitSpinner( 1, 'https://severalnines.com/wp-content/plugins/gravityforms/images/spinner.svg', true );jQuery(document).trigger('gform_page_loaded', [1, current_page]);window['gf_submitting_1'] = false;}else if(!is_redirect){var confirmation_content = jQuery(this).contents().find('.GF_AJAX_POSTBACK').html();if(!confirmation_content){confirmation_content = contents;}setTimeout(function(){jQuery('#gform_wrapper_1').replaceWith(confirmation_content);jQuery(document).scrollTop(jQuery('#gf_1').offset().top - mt);jQuery(document).trigger('gform_confirmation_loaded', [1]);window['gf_submitting_1'] = false;wp.a11y.speak(jQuery('#gform_confirmation_message_1').text());}, 50);}else{jQuery('#gform_1').append(contents);if(window['gformRedirect']) {gformRedirect();}}        const gformWrapperDiv = document.getElementById( "gform_wrapper_1" );        if ( gformWrapperDiv ) {            const visibilitySpan = document.createElement( "span" );            visibilitySpan.id = "gform_visibility_test_1";            gformWrapperDiv.insertAdjacentElement( "afterend", visibilitySpan );        }        const visibilityTestDiv = document.getElementById( "gform_visibility_test_1" );        let postRenderFired = false;                function triggerPostRender() {            if ( postRenderFired ) {                return;            }            postRenderFired = true;            jQuery( document ).trigger( 'gform_post_render', [1, current_page] );            gform.utils.trigger( { event: 'gform/postRender', native: false, data: { formId: 1, currentPage: current_page } } );            if ( visibilityTestDiv ) {                visibilityTestDiv.parentNode.removeChild( visibilityTestDiv );            }        }        function debounce( func, wait, immediate ) {            var timeout;            return function() {                var context = this, args = arguments;                var later = function() {                    timeout = null;                    if ( !immediate ) func.apply( context, args );                };                var callNow = immediate && !timeout;                clearTimeout( timeout );                timeout = setTimeout( later, wait );                if ( callNow ) func.apply( context, args );            };        }        const debouncedTriggerPostRender = debounce( function() {            triggerPostRender();        }, 200 );        if ( visibilityTestDiv && visibilityTestDiv.offsetParent === null ) {            const observer = new MutationObserver( ( mutations ) => {                mutations.forEach( ( mutation ) => {                    if ( mutation.type === 'attributes' && visibilityTestDiv.offsetParent !== null ) {                        debouncedTriggerPostRender();                        observer.disconnect();                    }                });            });            observer.observe( document.body, {                attributes: true,                childList: false,                subtree: true,                attributeFilter: [ 'style', 'class' ],            });        } else {            triggerPostRender();        }    } );} );
+</script>
+						</div>
+														</div>
+			</div>
+		</div>
+	</div>
+	<div class="wrapper-bottom">
+		<div class="wrapper">
+			<div class="site-footer__bottom">
+									<ul class="severalnines-socialmedia">
+													<li>
+								<a target="_blank" class="icon-Twitter" href="https://twitter.com/severalnines/" title="Twitter">
+									<span class="screen-reader-text">Twitter</span>
+								</a>
+							</li>
+														<li>
+								<a target="_blank" class="icon-Facebook" href="https://www.facebook.com/severalnines/" title="Facebook">
+									<span class="screen-reader-text">Facebook</span>
+								</a>
+							</li>
+														<li>
+								<a target="_blank" class="icon-Linkedin" href="https://www.linkedin.com/company/severalnines/" title="Linkedin">
+									<span class="screen-reader-text">Linkedin</span>
+								</a>
+							</li>
+														<li>
+								<a target="_blank" class="icon-Youtube" href="https://www.youtube.com/c/Severalnines/" title="Youtube">
+									<span class="screen-reader-text">Youtube</span>
+								</a>
+							</li>
+														<li>
+								<a target="_blank" class="icon-Slideshare" href="https://www.slideshare.net/severalnines/" title="Slideshare">
+									<span class="screen-reader-text">Slideshare</span>
+								</a>
+							</li>
+														<li>
+								<a target="_blank" class="icon-RSS" href="https://severalnines.com/feed/" title="RSS">
+									<span class="screen-reader-text">RSS</span>
+								</a>
+							</li>
+												</ul>
+									<div class="site-footer__copyright bottom-left">
+									<p>Severalnines, ClusterControl, and CCX are registered trademarks in the US, UK, and EU. The 3rd-party trademarks on this site are property of their respective owners and are used for referential purposes only.  </p>
+								</div>
+				<div class="site-footer__mandatory-links bottom-right">
+									<ul class="mandatory-links">
+													<li><a href="https://severalnines.com/ccx/terms/" target="_self" title="Terms of Service">Terms of Service</a>
+							</li>
+														<li><a href="https://severalnines.com/ccx/sla/" target="_self" title="Service Level Agreement">Service Level Agreement</a>
+							</li>
+														<li><a href="https://severalnines.com/ccx/dpa/" target="_self" title="Data Processing Agreement">Data Processing Agreement</a>
+							</li>
+														<li><a href="https://severalnines.com/privacy/" target="_self" title="Privacy Policy">Privacy Policy</a>
+							</li>
+												</ul>
+								</div>
+			</div>
+		</div>
+	</div>
+
+</footer>
+</div>
+<!-- Zopim chat bot code -->
+<script type="text/javascript" src="data:text/javascript;base64,CndpbmRvdy4kem9waW18fChmdW5jdGlvbihkLHMpe3ZhciB6PSR6b3BpbT1mdW5jdGlvbihjKXt6Ll8ucHVzaChjKX0sJD16LnM9CmQuY3JlYXRlRWxlbWVudChzKSxlPWQuZ2V0RWxlbWVudHNCeVRhZ05hbWUocylbMF07ei5zZXQ9ZnVuY3Rpb24obyl7ei5zZXQuCl8ucHVzaChvKX07ei5fPVtdO3ouc2V0Ll89W107JC5hc3luYz0hMDskLnNldEF0dHJpYnV0ZSgiY2hhcnNldCIsInV0Zi04Iik7CiQuc3JjPSIvL3YyLnpvcGltLmNvbS8/M1AyRHphVzZLWDZKckNZQmJuRUFhZU9hMklWbUJNNVQiO3oudD0rbmV3IERhdGU7JC4KdHlwZT0idGV4dC9qYXZhc2NyaXB0IjtlLnBhcmVudE5vZGUuaW5zZXJ0QmVmb3JlKCQsZSl9KShkb2N1bWVudCwic2NyaXB0Iik7Cg==" data-rocket-status="executed">
+window.$zopim||(function(d,s){var z=$zopim=function(c){z._.push(c)},$=z.s=
+d.createElement(s),e=d.getElementsByTagName(s)[0];z.set=function(o){z.set.
+_.push(o)};z._=[];z.set._=[];$.async=!0;$.setAttribute("charset","utf-8");
+$.src="//v2.zopim.com/?3P2DzaW6KX6JrCYBbnEAaeOa2IVmBM5T";z.t=+new Date;$.
+type="text/javascript";e.parentNode.insertBefore($,e)})(document,"script");
+</script>
+
+
+<!-- scrolling functionality for when hash clicked/ hash for another page form -->
+<script type="text/javascript" src="data:text/javascript;base64,CmpRdWVyeShkb2N1bWVudCkucmVhZHkoZnVuY3Rpb24oKXsKCWpRdWVyeSgiLmFjZi1idXR0b24tYmxvY2sgYSIpLm9uKCdjbGljaycsIGZ1bmN0aW9uKGV2ZW50KSB7CgkJaWYgKCh0aGlzLmhhc2ggIT09ICIiICYmIHRoaXMuaGFzaCA9PSB0aGlzLmhyZWYpIHx8IHRoaXMuaGFzaCA9PSAnI2dmb3JtX3dyYXBwZXJfNycpIHsKCQkJZXZlbnQucHJldmVudERlZmF1bHQoKTsKCQkJdmFyIGhhc2ggPSB0aGlzLmhhc2g7CgkJCWpRdWVyeSgnaHRtbCwgYm9keScpLmFuaW1hdGUoewoJCQkJc2Nyb2xsVG9wOiBqUXVlcnkoaGFzaCkub2Zmc2V0KCkudG9wLTIwMAoJCQkJfSwgMCwgZnVuY3Rpb24oKXsKCQkJCXdpbmRvdy5sb2NhdGlvbi5oYXNoID0gaGFzaDsKCQkJfSk7CgkJfSAKCX0pOwoKCXNldFRpbWVvdXQoKCkgPT4gewoJICAgIGlkID0gd2luZG93LmxvY2F0aW9uLmhhc2g7CgkgICAgaWYgKCBqUXVlcnkoaWQpLmxlbmd0aCA+IDAgKSB7CgkJCWpRdWVyeSgnaHRtbCwgYm9keScpLmFuaW1hdGUoewoJCQkJc2Nyb2xsVG9wOiBqUXVlcnkoaWQpLm9mZnNldCgpLnRvcC0xODAKCQkJCX0sIDAsIGZ1bmN0aW9uKCl7CQkKCQkJCXdpbmRvdy5sb2NhdGlvbi5oYXNoID0gaWQ7CgkJCX0pOwoJICAgIH0KCX0sIDEwMCk7CQp9KTsK" data-rocket-status="executed">
+jQuery(document).ready(function(){
+	jQuery(".acf-button-block a").on('click', function(event) {
+		if ((this.hash !== "" && this.hash == this.href) || this.hash == '#gform_wrapper_7') {
+			event.preventDefault();
+			var hash = this.hash;
+			jQuery('html, body').animate({
+				scrollTop: jQuery(hash).offset().top-200
+				}, 0, function(){
+				window.location.hash = hash;
+			});
+		} 
+	});
+
+	setTimeout(() => {
+	    id = window.location.hash;
+	    if ( jQuery(id).length > 0 ) {
+			jQuery('html, body').animate({
+				scrollTop: jQuery(id).offset().top-180
+				}, 0, function(){		
+				window.location.hash = id;
+			});
+	    }
+	}, 100);	
+});
+</script>
+<!--Loading sticky class beforehand if user has scrolled on the page --> 
+<script type="text/javascript">
+var header = jQuery(".site-header");
+if(jQuery(window).width() <= 991 && jQuery(window).scrollTop() > 64){
+    header.addClass("sticky");
+}else if( jQuery(window).width() > 991 && jQuery(window).scrollTop() > 88 ){
+    header.addClass("sticky");
+}
+</script>
+<style>
+.demo-container .tabs span:nth-child(3) {margin-right: auto !important;}
+.demo-container .tabs span { margin: 0 auto 15px;}
+.site-footer .site-footer__copyright>p{    font-size: 12px;
+    color: #fff !important;
+    letter-spacing: 0px;
+    font-weight: 400;display: block;
+    padding-top: 2px;text-align: left;}
+.site-footer__bottom .mandatory-links li a {
+    color: #fff !important;}
+.list-blocks {
+    padding-left: 20px !important;
+    margin-top: 0px !important;
+}
+.list-blocks li{
+    padding-top: 0px !important;
+}
+.logo-white-bg {
+position: relative;
+min-height: 120px;
+    width: 100%;
+    text-align: center;
+}
+.logo-white-bg > img {
+position: absolute;
+max-height: 120px;
+width: auto;
+left: 50%;
+top: 50%;
+-webkit-transform:translate(-50%, -50%);
+-moz-transform:translate(-50%, -50%);
+-ms-transform:translate(-50%, -50%);
+-o-transform:translate(-50%, -50%);
+transform:translate(-50%, -50%);
+}
+</style><link rel="stylesheet" id="gform_basic-css" href="./PostgreSQL Triggers and Stored Function Basics _ Severalnines_files/basic.min.css" media="all"><iframe name="__uspapiLocator" tabindex="-1" role="presentation" aria-hidden="true" title="Blank" style="display: none; position: absolute; width: 1px; height: 1px; top: -9999px;" src="./PostgreSQL Triggers and Stored Function Basics _ Severalnines_files/saved_resource(4).html"></iframe><iframe tabindex="-1" role="presentation" aria-hidden="true" title="Blank" src="./PostgreSQL Triggers and Stored Function Basics _ Severalnines_files/bc-v4.min.html" style="position: absolute; width: 1px; height: 1px; top: -9999px;"></iframe>
+<link rel="stylesheet" id="gform_theme_components-css" href="./PostgreSQL Triggers and Stored Function Basics _ Severalnines_files/theme-components.min.css" media="all">
+<link rel="stylesheet" id="gform_theme_ie11-css" href="./PostgreSQL Triggers and Stored Function Basics _ Severalnines_files/theme-ie11.min.css" media="all">
+<link rel="stylesheet" id="gform_theme-css" href="./PostgreSQL Triggers and Stored Function Basics _ Severalnines_files/theme.min.css" media="all">
+<script src="./PostgreSQL Triggers and Stored Function Basics _ Severalnines_files/frontend.js.download" id="cntrst-scripts-js" type="text/javascript"></script>
+<script src="./PostgreSQL Triggers and Stored Function Basics _ Severalnines_files/dom-ready.min.js.download" id="wp-dom-ready-js" type="text/javascript"></script>
+<script src="./PostgreSQL Triggers and Stored Function Basics _ Severalnines_files/hooks.min.js.download" id="wp-hooks-js" type="text/javascript"></script>
+<script src="./PostgreSQL Triggers and Stored Function Basics _ Severalnines_files/i18n.min.js.download" id="wp-i18n-js" type="text/javascript"></script>
+<script id="wp-i18n-js-after" type="text/javascript">
+wp.i18n.setLocaleData( { 'text direction\u0004ltr': [ 'ltr' ] } );
+</script>
+<script src="./PostgreSQL Triggers and Stored Function Basics _ Severalnines_files/a11y.min.js.download" id="wp-a11y-js" type="text/javascript"></script>
+<script defer="defer" src="./PostgreSQL Triggers and Stored Function Basics _ Severalnines_files/jquery.json.min.js.download" id="gform_json-js" type="text/javascript"></script>
+<script id="gform_gravityforms-js-extra" type="text/javascript">
+var gform_i18n = {"datepicker":{"days":{"monday":"Mo","tuesday":"Tu","wednesday":"We","thursday":"Th","friday":"Fr","saturday":"Sa","sunday":"Su"},"months":{"january":"January","february":"February","march":"March","april":"April","may":"May","june":"June","july":"July","august":"August","september":"September","october":"October","november":"November","december":"December"},"firstDay":1,"iconText":"Select date"}};
+var gf_legacy_multi = [];
+var gform_gravityforms = {"strings":{"invalid_file_extension":"This type of file is not allowed. Must be one of the following:","delete_file":"Delete this file","in_progress":"in progress","file_exceeds_limit":"File exceeds size limit","illegal_extension":"This type of file is not allowed.","max_reached":"Maximum number of files reached","unknown_error":"There was a problem while saving the file on the server","currently_uploading":"Please wait for the uploading to complete","cancel":"Cancel","cancel_upload":"Cancel this upload","cancelled":"Cancelled"},"vars":{"images_url":"https:\/\/severalnines.com\/wp-content\/plugins\/gravityforms\/images"}};
+var gf_global = {"gf_currency_config":{"name":"U.S. Dollar","symbol_left":"$","symbol_right":"","symbol_padding":"","thousand_separator":",","decimal_separator":".","decimals":2,"code":"USD"},"base_url":"https:\/\/severalnines.com\/wp-content\/plugins\/gravityforms","number_formats":[],"spinnerUrl":"https:\/\/severalnines.com\/wp-content\/plugins\/gravityforms\/images\/spinner.svg","version_hash":"b1b4de513954c8c1ad936e2afdf30fca","strings":{"newRowAdded":"New row added.","rowRemoved":"Row removed","formSaved":"The form has been saved.  The content contains the link to return and complete the form."}};
+var gf_global = {"gf_currency_config":{"name":"U.S. Dollar","symbol_left":"$","symbol_right":"","symbol_padding":"","thousand_separator":",","decimal_separator":".","decimals":2,"code":"USD"},"base_url":"https:\/\/severalnines.com\/wp-content\/plugins\/gravityforms","number_formats":[],"spinnerUrl":"https:\/\/severalnines.com\/wp-content\/plugins\/gravityforms\/images\/spinner.svg","version_hash":"b1b4de513954c8c1ad936e2afdf30fca","strings":{"newRowAdded":"New row added.","rowRemoved":"Row removed","formSaved":"The form has been saved.  The content contains the link to return and complete the form."}};
+</script>
+<script defer="defer" src="./PostgreSQL Triggers and Stored Function Basics _ Severalnines_files/gravityforms.min.js.download" id="gform_gravityforms-js" type="text/javascript"></script>
+<script defer="defer" id="gform_recaptcha-js" src="./PostgreSQL Triggers and Stored Function Basics _ Severalnines_files/api.js.download" data-rocket-status="executed"></script>
+<script defer="defer" src="./PostgreSQL Triggers and Stored Function Basics _ Severalnines_files/placeholders.jquery.min.js.download" id="gform_placeholder-js" type="text/javascript"></script>
+<script defer="defer" src="./PostgreSQL Triggers and Stored Function Basics _ Severalnines_files/utils.min.js.download" id="gform_gravityforms_utils-js" type="text/javascript"></script>
+<script defer="defer" src="./PostgreSQL Triggers and Stored Function Basics _ Severalnines_files/vendor-theme.min.js.download" id="gform_gravityforms_theme_vendors-js" type="text/javascript"></script>
+<script id="gform_gravityforms_theme-js-extra" type="text/javascript">
+var gform_theme_config = {"common":{"form":{"honeypot":{"version_hash":"b1b4de513954c8c1ad936e2afdf30fca"}}},"hmr_dev":"","public_path":"https:\/\/severalnines.com\/wp-content\/plugins\/gravityforms\/assets\/js\/dist\/"};
+</script>
+<script defer="defer" src="./PostgreSQL Triggers and Stored Function Basics _ Severalnines_files/scripts-theme.min.js.download" id="gform_gravityforms_theme-js" type="text/javascript"></script>
+<script src="data:text/javascript;base64,Cmdmb3JtLmluaXRpYWxpemVPbkxvYWRlZCggZnVuY3Rpb24oKSB7IGpRdWVyeShkb2N1bWVudCkub24oJ2dmb3JtX3Bvc3RfcmVuZGVyJywgZnVuY3Rpb24oZXZlbnQsIGZvcm1JZCwgY3VycmVudFBhZ2Upe2lmKGZvcm1JZCA9PSAxKSB7aWYodHlwZW9mIFBsYWNlaG9sZGVycyAhPSAndW5kZWZpbmVkJyl7CiAgICAgICAgICAgICAgICAgICAgICAgIFBsYWNlaG9sZGVycy5lbmFibGUoKTsKICAgICAgICAgICAgICAgICAgICB9fSB9ICk7alF1ZXJ5KGRvY3VtZW50KS5vbignZ2Zvcm1fcG9zdF9jb25kaXRpb25hbF9sb2dpYycsIGZ1bmN0aW9uKGV2ZW50LCBmb3JtSWQsIGZpZWxkcywgaXNJbml0KXt9ICkgfSApOwo=" data-rocket-status="executed">
+gform.initializeOnLoaded( function() { jQuery(document).on('gform_post_render', function(event, formId, currentPage){if(formId == 1) {if(typeof Placeholders != 'undefined'){
+                        Placeholders.enable();
+                    }} } );jQuery(document).on('gform_post_conditional_logic', function(event, formId, fields, isInit){} ) } );
+</script>
+<script src="data:text/javascript;base64,Cmdmb3JtLmluaXRpYWxpemVPbkxvYWRlZCggZnVuY3Rpb24oKSB7ICAgICAgICBjb25zdCBnZm9ybVdyYXBwZXJEaXYgPSBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCggImdmb3JtX3dyYXBwZXJfMSIgKTsgICAgICAgIGlmICggZ2Zvcm1XcmFwcGVyRGl2ICkgeyAgICAgICAgICAgIGNvbnN0IHZpc2liaWxpdHlTcGFuID0gZG9jdW1lbnQuY3JlYXRlRWxlbWVudCggInNwYW4iICk7ICAgICAgICAgICAgdmlzaWJpbGl0eVNwYW4uaWQgPSAiZ2Zvcm1fdmlzaWJpbGl0eV90ZXN0XzEiOyAgICAgICAgICAgIGdmb3JtV3JhcHBlckRpdi5pbnNlcnRBZGphY2VudEVsZW1lbnQoICJhZnRlcmVuZCIsIHZpc2liaWxpdHlTcGFuICk7ICAgICAgICB9ICAgICAgICBjb25zdCB2aXNpYmlsaXR5VGVzdERpdiA9IGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCAiZ2Zvcm1fdmlzaWJpbGl0eV90ZXN0XzEiICk7ICAgICAgICBsZXQgcG9zdFJlbmRlckZpcmVkID0gZmFsc2U7ICAgICAgICAgICAgICAgIGZ1bmN0aW9uIHRyaWdnZXJQb3N0UmVuZGVyKCkgeyAgICAgICAgICAgIGlmICggcG9zdFJlbmRlckZpcmVkICkgeyAgICAgICAgICAgICAgICByZXR1cm47ICAgICAgICAgICAgfSAgICAgICAgICAgIHBvc3RSZW5kZXJGaXJlZCA9IHRydWU7ICAgICAgICAgICAgalF1ZXJ5KCBkb2N1bWVudCApLnRyaWdnZXIoICdnZm9ybV9wb3N0X3JlbmRlcicsIFsxLCAxXSApOyAgICAgICAgICAgIGdmb3JtLnV0aWxzLnRyaWdnZXIoIHsgZXZlbnQ6ICdnZm9ybS9wb3N0UmVuZGVyJywgbmF0aXZlOiBmYWxzZSwgZGF0YTogeyBmb3JtSWQ6IDEsIGN1cnJlbnRQYWdlOiAxIH0gfSApOyAgICAgICAgICAgIGlmICggdmlzaWJpbGl0eVRlc3REaXYgKSB7ICAgICAgICAgICAgICAgIHZpc2liaWxpdHlUZXN0RGl2LnBhcmVudE5vZGUucmVtb3ZlQ2hpbGQoIHZpc2liaWxpdHlUZXN0RGl2ICk7ICAgICAgICAgICAgfSAgICAgICAgfSAgICAgICAgZnVuY3Rpb24gZGVib3VuY2UoIGZ1bmMsIHdhaXQsIGltbWVkaWF0ZSApIHsgICAgICAgICAgICB2YXIgdGltZW91dDsgICAgICAgICAgICByZXR1cm4gZnVuY3Rpb24oKSB7ICAgICAgICAgICAgICAgIHZhciBjb250ZXh0ID0gdGhpcywgYXJncyA9IGFyZ3VtZW50czsgICAgICAgICAgICAgICAgdmFyIGxhdGVyID0gZnVuY3Rpb24oKSB7ICAgICAgICAgICAgICAgICAgICB0aW1lb3V0ID0gbnVsbDsgICAgICAgICAgICAgICAgICAgIGlmICggIWltbWVkaWF0ZSApIGZ1bmMuYXBwbHkoIGNvbnRleHQsIGFyZ3MgKTsgICAgICAgICAgICAgICAgfTsgICAgICAgICAgICAgICAgdmFyIGNhbGxOb3cgPSBpbW1lZGlhdGUgJiYgIXRpbWVvdXQ7ICAgICAgICAgICAgICAgIGNsZWFyVGltZW91dCggdGltZW91dCApOyAgICAgICAgICAgICAgICB0aW1lb3V0ID0gc2V0VGltZW91dCggbGF0ZXIsIHdhaXQgKTsgICAgICAgICAgICAgICAgaWYgKCBjYWxsTm93ICkgZnVuYy5hcHBseSggY29udGV4dCwgYXJncyApOyAgICAgICAgICAgIH07ICAgICAgICB9ICAgICAgICBjb25zdCBkZWJvdW5jZWRUcmlnZ2VyUG9zdFJlbmRlciA9IGRlYm91bmNlKCBmdW5jdGlvbigpIHsgICAgICAgICAgICB0cmlnZ2VyUG9zdFJlbmRlcigpOyAgICAgICAgfSwgMjAwICk7ICAgICAgICBpZiAoIHZpc2liaWxpdHlUZXN0RGl2ICYmIHZpc2liaWxpdHlUZXN0RGl2Lm9mZnNldFBhcmVudCA9PT0gbnVsbCApIHsgICAgICAgICAgICBjb25zdCBvYnNlcnZlciA9IG5ldyBNdXRhdGlvbk9ic2VydmVyKCAoIG11dGF0aW9ucyApID0+IHsgICAgICAgICAgICAgICAgbXV0YXRpb25zLmZvckVhY2goICggbXV0YXRpb24gKSA9PiB7ICAgICAgICAgICAgICAgICAgICBpZiAoIG11dGF0aW9uLnR5cGUgPT09ICdhdHRyaWJ1dGVzJyAmJiB2aXNpYmlsaXR5VGVzdERpdi5vZmZzZXRQYXJlbnQgIT09IG51bGwgKSB7ICAgICAgICAgICAgICAgICAgICAgICAgZGVib3VuY2VkVHJpZ2dlclBvc3RSZW5kZXIoKTsgICAgICAgICAgICAgICAgICAgICAgICBvYnNlcnZlci5kaXNjb25uZWN0KCk7ICAgICAgICAgICAgICAgICAgICB9ICAgICAgICAgICAgICAgIH0pOyAgICAgICAgICAgIH0pOyAgICAgICAgICAgIG9ic2VydmVyLm9ic2VydmUoIGRvY3VtZW50LmJvZHksIHsgICAgICAgICAgICAgICAgYXR0cmlidXRlczogdHJ1ZSwgICAgICAgICAgICAgICAgY2hpbGRMaXN0OiBmYWxzZSwgICAgICAgICAgICAgICAgc3VidHJlZTogdHJ1ZSwgICAgICAgICAgICAgICAgYXR0cmlidXRlRmlsdGVyOiBbICdzdHlsZScsICdjbGFzcycgXSwgICAgICAgICAgICB9KTsgICAgICAgIH0gZWxzZSB7ICAgICAgICAgICAgdHJpZ2dlclBvc3RSZW5kZXIoKTsgICAgICAgIH0gICAgfSApOwo=" data-rocket-status="executed">
+gform.initializeOnLoaded( function() {        const gformWrapperDiv = document.getElementById( "gform_wrapper_1" );        if ( gformWrapperDiv ) {            const visibilitySpan = document.createElement( "span" );            visibilitySpan.id = "gform_visibility_test_1";            gformWrapperDiv.insertAdjacentElement( "afterend", visibilitySpan );        }        const visibilityTestDiv = document.getElementById( "gform_visibility_test_1" );        let postRenderFired = false;                function triggerPostRender() {            if ( postRenderFired ) {                return;            }            postRenderFired = true;            jQuery( document ).trigger( 'gform_post_render', [1, 1] );            gform.utils.trigger( { event: 'gform/postRender', native: false, data: { formId: 1, currentPage: 1 } } );            if ( visibilityTestDiv ) {                visibilityTestDiv.parentNode.removeChild( visibilityTestDiv );            }        }        function debounce( func, wait, immediate ) {            var timeout;            return function() {                var context = this, args = arguments;                var later = function() {                    timeout = null;                    if ( !immediate ) func.apply( context, args );                };                var callNow = immediate && !timeout;                clearTimeout( timeout );                timeout = setTimeout( later, wait );                if ( callNow ) func.apply( context, args );            };        }        const debouncedTriggerPostRender = debounce( function() {            triggerPostRender();        }, 200 );        if ( visibilityTestDiv && visibilityTestDiv.offsetParent === null ) {            const observer = new MutationObserver( ( mutations ) => {                mutations.forEach( ( mutation ) => {                    if ( mutation.type === 'attributes' && visibilityTestDiv.offsetParent !== null ) {                        debouncedTriggerPostRender();                        observer.disconnect();                    }                });            });            observer.observe( document.body, {                attributes: true,                childList: false,                subtree: true,                attributeFilter: [ 'style', 'class' ],            });        } else {            triggerPostRender();        }    } );
+</script>
+<script type="text/javascript">window.lazyLoadOptions={elements_selector:"iframe[data-lazy-src]",data_src:"lazy-src",data_srcset:"lazy-srcset",data_sizes:"lazy-sizes",class_loading:"lazyloading",class_loaded:"lazyloaded",threshold:300,callback_loaded:function(element){if(element.tagName==="IFRAME"&&element.dataset.rocketLazyload=="fitvidscompatible"){if(element.classList.contains("lazyloaded")){if(typeof window.jQuery!="undefined"){if(jQuery.fn.fitVids){jQuery(element).parent().fitVids()}}}}}};window.addEventListener('LazyLoad::Initialized',function(e){var lazyLoadInstance=e.detail.instance;if(window.MutationObserver){var observer=new MutationObserver(function(mutations){var image_count=0;var iframe_count=0;var rocketlazy_count=0;mutations.forEach(function(mutation){for(var i=0;i<mutation.addedNodes.length;i++){if(typeof mutation.addedNodes[i].getElementsByTagName!=='function'){continue}
+if(typeof mutation.addedNodes[i].getElementsByClassName!=='function'){continue}
+images=mutation.addedNodes[i].getElementsByTagName('img');is_image=mutation.addedNodes[i].tagName=="IMG";iframes=mutation.addedNodes[i].getElementsByTagName('iframe');is_iframe=mutation.addedNodes[i].tagName=="IFRAME";rocket_lazy=mutation.addedNodes[i].getElementsByClassName('rocket-lazyload');image_count+=images.length;iframe_count+=iframes.length;rocketlazy_count+=rocket_lazy.length;if(is_image){image_count+=1}
+if(is_iframe){iframe_count+=1}}});if(image_count>0||iframe_count>0||rocketlazy_count>0){lazyLoadInstance.update()}});var b=document.getElementsByTagName("body")[0];var config={childList:!0,subtree:!0};observer.observe(b,config)}},!1)</script><script data-no-minify="1" async="" src="./PostgreSQL Triggers and Stored Function Basics _ Severalnines_files/lazyload.min.js.download" type="text/javascript"></script><!-- The Modal -->
+<div id="s9s_modal" class="modal image_lightbox_popup" style="display: none;">
+  <span id="s9s_modal-close" class="modal-close">×</span>
+  <img id="s9s_modal-content" class="modal-content">
+</div>
+			<!-- Pardot tracking Code -->
+			<script type="text/javascript" src="data:text/javascript;base64,CgkJCQlwaUFJZCA9ICcxMzkxODEnOwoJCQkJcGlDSWQgPSAnMTQ1Myc7CgkJCQlwaUhvc3RuYW1lID0gJ3BpLnBhcmRvdC5jb20nOwoJCQkJKGZ1bmN0aW9uKCkgewoJCQkJCWZ1bmN0aW9uIGFzeW5jX2xvYWQoKXsKCQkJCQkJdmFyIHMgPSBkb2N1bWVudC5jcmVhdGVFbGVtZW50KCdzY3JpcHQnKTsgcy50eXBlID0gJ3RleHQvamF2YXNjcmlwdCc7CgkJCQkJCXMuc3JjID0gKCdodHRwczonID09IGRvY3VtZW50LmxvY2F0aW9uLnByb3RvY29sID8gJ2h0dHBzOi8vcGknIDogJ2h0dHA6Ly9jZG4nKSArICcucGFyZG90LmNvbS9wZC5qcyc7CgkJCQkJCXZhciBjID0gZG9jdW1lbnQuZ2V0RWxlbWVudHNCeVRhZ05hbWUoJ3NjcmlwdCcpWzBdOyBjLnBhcmVudE5vZGUuaW5zZXJ0QmVmb3JlKHMsIGMpOwoJCQkJCX0KCQkJCQlpZih3aW5kb3cuYXR0YWNoRXZlbnQpIHsgd2luZG93LmF0dGFjaEV2ZW50KCdvbmxvYWQnLCBhc3luY19sb2FkKTsgfQoJCQkJCWVsc2UgeyB3aW5kb3cuYWRkRXZlbnRMaXN0ZW5lcignbG9hZCcsIGFzeW5jX2xvYWQsIGZhbHNlKTsgfQoJCQkJfSkoKTsKCQkJ" data-rocket-status="executed">
+				piAId = '139181';
+				piCId = '1453';
+				piHostname = 'pi.pardot.com';
+				(function() {
+					function async_load(){
+						var s = document.createElement('script'); s.type = 'text/javascript';
+						s.src = ('https:' == document.location.protocol ? 'https://pi' : 'http://cdn') + '.pardot.com/pd.js';
+						var c = document.getElementsByTagName('script')[0]; c.parentNode.insertBefore(s, c);
+					}
+					if(window.attachEvent) { window.attachEvent('onload', async_load); }
+					else { window.addEventListener('load', async_load, false); }
+				})();
+			</script>
+			<!-- End Pardot tracking Code -->
+		
+
+<script type="text/javascript" id="" charset="">(function(d,l,e,r){function t(c,b,g){var a="";g&&(a=new Date,a.setTime(a.getTime()+864E5*g),a="; expires\x3d"+a.toUTCString(),f="; SameSite\x3dStrict");l.cookie=c+"\x3d"+b+a+f+"; path\x3d/"}d[e]=d[e]||[];d[e].push({start:(new Date).getTime(),event:"stg.start"});var p=l.getElementsByTagName("script")[0],n=l.createElement("script"),h=(d.location.href.match("stg_debug")||l.cookie.match("stg_debug"))&&!d.location.href.match("stg_disable_debug");t("stg_debug",h?1:"",h?14:-1);var m=[];"dataLayer"!==e&&
+m.push("data_layer_name\x3d"+e);h&&m.push("stg_debug");h=0<m.length?"?"+m.join("\x26"):"";n.async=!0;n.src="https://severalnines.containers.piwik.pro/"+r+".js"+h;p.parentNode.insertBefore(n,p);!function(c,b,g){c[b]=c[b]||{};for(var a=0;a<g.length;a++)!function(k){c[b][k]=c[b][k]||{};c[b][k].api=c[b][k].api||function(){var q=[].slice.call(arguments,0);"string"==typeof q[0]&&d[e].push({event:b+"."+k+":"+q[0],parameters:[].slice.call(arguments,1)})}}(g[a])}(d,"ppms",["tm","cm"])})(window,document,"dataLayer",
+"978613d0-5291-4161-9ff7-7dbb9e183dea");</script>
+<script type="text/javascript" id="" charset="">!function(d,e,f,a,b,c){d.twq||(a=d.twq=function(){a.exe?a.exe.apply(a,arguments):a.queue.push(arguments)},a.version="1.1",a.queue=[],b=e.createElement(f),b.async=!0,b.src="https://static.ads-twitter.com/uwt.js",c=e.getElementsByTagName(f)[0],c.parentNode.insertBefore(b,c))}(window,document,"script");twq("config","nycjk");</script>
+<span id="PING_IFRAME_FORM_DETECTION" style="display: none;"></span><span id="PING_IFRAME_FORM_DETECTION" style="display: none;"></span><iframe id="_hjSafeContext_19342145" title="_hjSafeContext" tabindex="-1" aria-hidden="true" src="./PostgreSQL Triggers and Stored Function Basics _ Severalnines_files/saved_resource(5).html" style="display: none !important; width: 1px !important; height: 1px !important; opacity: 0 !important; pointer-events: none !important;"></iframe><img src="./PostgreSQL Triggers and Stored Function Basics _ Severalnines_files/adsct" height="1" width="1" style="display: none;"><img src="./PostgreSQL Triggers and Stored Function Basics _ Severalnines_files/adsct(1)" height="1" width="1" style="display: none;"><iframe data-product="web_widget" title="No content" role="presentation" tabindex="-1" allow="microphone *" aria-hidden="true" src="./PostgreSQL Triggers and Stored Function Basics _ Severalnines_files/saved_resource(6).html" style="width: 0px; height: 0px; border: 0px; position: absolute; top: -9999px;"></iframe><script type="text/javascript">
+    var _paq = _paq || [];
+    _paq.push(['setTrackingSource', 'jstc_tm']);
+    _paq.push(['enableLinkTracking']);
+    _paq.push(['setIpTracking', true]);
+    _paq.push(['setDomains', ['severalnines.com']]);
+    _paq.push(['setCookieDomain', '*.severalnines.com']);
+    _paq.push(['enableHeartBeatTimer']);
+    _paq.push(['setSecureCookie', 1]);
+    _paq.push(['trackPageView']);
+    _paq.push(['trackAllContentImpressions']);
+    _paq.push(['enableCrossDomainLinking']);
+    _paq.push(['enableJSErrorTracking']);
+    (function(p,i,w,ik) {
+        var g=ik.createElement('script'),s=ik.getElementsByTagName('script')[0];
+        _paq.push(['setTrackerUrl', p]);
+        _paq.push(['setSiteId', w]);
+        g.type='text/javascript';g.async=true;g.defer=true;g.src=i;s.parentNode.insertBefore(g,s);
+    })('https://severalnines.piwik.pro/ppms.php','https://severalnines.containers.piwik.pro/ppms.js','978613d0\u002D5291\u002D4161\u002D9ff7\u002D7dbb9e183dea',document)
+</script>
+<script type="text/javascript">
+    var _linkedin_data_partner_id = 3970858;
+    (function(){var s = document.getElementsByTagName("script")[0];
+        var b = document.createElement("script");
+        b.type = "text/javascript";b.async = true;
+        b.src = "https://snap.licdn.com/li.lms-analytics/insight.min.js";
+        s.parentNode.insertBefore(b, s);})();
+</script>
+<div><iframe title="Opens a widget where you can chat to one of our agents" id="launcher" tabindex="0" style="color-scheme: light; width: 107px; height: 50px; padding: 0px; margin: 10px 20px; position: fixed; bottom: 0px; overflow: visible; opacity: 1; border: 0px; z-index: 999998; transition-duration: 250ms; transition-timing-function: cubic-bezier(0.645, 0.045, 0.355, 1); transition-property: opacity, top, bottom; right: 0px;" src="./PostgreSQL Triggers and Stored Function Basics _ Severalnines_files/saved_resource(7).html"></iframe></div><img id="CookiebotSessionPixel" src="./PostgreSQL Triggers and Stored Function Basics _ Severalnines_files/1.gif" alt="Cookiebot session tracker icon loaded" data-cookieconsent="ignore" style="display: none;"><p id="a11y-speak-intro-text" class="a11y-speak-intro-text" style="position: absolute;margin: -1px;padding: 0;height: 1px;width: 1px;overflow: hidden;clip: rect(1px, 1px, 1px, 1px);-webkit-clip-path: inset(50%);clip-path: inset(50%);border: 0;word-wrap: normal !important;" hidden="hidden">Notifications</p><div id="a11y-speak-assertive" class="a11y-speak-region" style="position: absolute;margin: -1px;padding: 0;height: 1px;width: 1px;overflow: hidden;clip: rect(1px, 1px, 1px, 1px);-webkit-clip-path: inset(50%);clip-path: inset(50%);border: 0;word-wrap: normal !important;" aria-live="assertive" aria-relevant="additions text" aria-atomic="true"></div><div id="a11y-speak-polite" class="a11y-speak-region" style="position: absolute;margin: -1px;padding: 0;height: 1px;width: 1px;overflow: hidden;clip: rect(1px, 1px, 1px, 1px);-webkit-clip-path: inset(50%);clip-path: inset(50%);border: 0;word-wrap: normal !important;" aria-live="polite" aria-relevant="additions text" aria-atomic="true"></div><div><div dir="ltr" id="CookiebotWidget" lang="en"><button class="CookiebotWidget-logo" aria-label="Open widget" lang="en" fdprocessedid="0kl55n"><svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><g fill-rule="evenodd"><circle cx="12" cy="12" r="12"></circle><path d="M15.094 13.978c-1.146 0-1.946-.813-1.946-1.978s.8-1.978 1.946-1.978c1.145 0 1.945.813 1.945 1.978s-.8 1.978-1.945 1.978M9.07 10.022h3.883l-.094.09c-.537.515-.844 1.203-.844 1.888 0 1.738 1.294 3 3.079 3 1.786 0 3.082-1.262 3.082-3s-1.296-3-3.082-3H9.079C7.295 9 6 10.262 6 12s1.295 3 3.079 3h2.144v-1.022H9.07c-1.136 0-1.932-.813-1.937-1.978 0-1.146.815-1.978 1.937-1.978" fill="#000"></path></g></svg></button><div id="CookiebotWidget-widgetContent"></div></div><div id="CookiebotWidgetUnderlay"></div></div><style id="CookiebotWidgetStylesheet">@keyframes CookiebotWidgetFadeIn{0%{opacity:0}to{opacity:1}}#CookiebotWidget{word-wrap:break-word;left:10px;bottom:10px;animation:CookiebotWidgetFadeIn .3s ease-in;background-color:#141414;border-radius:40px;box-shadow:0 4px 16px rgba(0,0,0,.15);font-family:Helvetica,Arial,sans-serif;line-height:1.5;min-height:48px;min-width:48px;opacity:0;pointer-events:none;position:fixed;transition:all .2s ease-in;word-break:break-word;z-index:2147483631}#CookiebotWidget,#CookiebotWidget *{background:transparent;box-sizing:border-box;color:#FFFFFF;font-size:15px;letter-spacing:.1px;margin:0;outline:0;padding:0}#CookiebotWidget *{font-family:inherit}#CookiebotWidget button,#CookiebotWidget li,#CookiebotWidget strong,#CookiebotWidget svg,#CookiebotWidget ul{border:none;cursor:inherit;font-weight:inherit;line-height:1.5}#CookiebotWidget:not(.CookiebotWidget-inactive){opacity:1;pointer-events:all;transition:opacity .3s ease-in,border-radius .2s ease-in}#CookiebotWidget.CookiebotWidget-open{overflow:hidden}#CookiebotWidget:not(.CookiebotWidget-open):hover{box-shadow:0 4px 18px rgba(0,0,0,.3)}#CookiebotWidget+#CookiebotWidgetUnderlay{background:#000;height:100vh;left:0;opacity:0;pointer-events:none;position:fixed;top:0;visibility:hidden;width:100vw;z-index:2147483630}#CookiebotWidget:not(.CookiebotWidget-open) .CookiebotWidget-logo{cursor:pointer}#CookiebotWidget .CookiebotWidget-logo{display:block;transition:opacity .3s,transform .3s}#CookiebotWidget .CookiebotWidget-logo svg{display:block;height:44px;transition:all .3s;width:44px}#CookiebotWidget:not(.CookiebotWidget-open) button.CookiebotWidget-logo svg{height:48px;transition:all 0s ease;transition-delay:.2s;width:48px}#CookiebotWidget .CookiebotWidget-logo svg circle{fill:#141414}#CookiebotWidget .CookiebotWidget-logo svg path{fill:#FFFFFF}#CookiebotWidget #CookiebotWidget-widgetContent{display:flex;max-height:0;max-width:0;overflow:hidden;transition:all .2s ease-in}#CookiebotWidget.CookiebotWidget-open #CookiebotWidget-widgetContent{max-height:1000px;max-width:1000px}#CookiebotWidget.CookiebotWidget-open .CookiebotWidget-contents{max-height:calc(100vh - 10px);min-height:360px}#CookiebotWidget :focus-visible,#CookiebotWidget:not(.CookiebotWidget-open) .Cookiebotwidget-logo{outline:2px solid #1032CF;outline-offset:1px}@media screen and (max-width:600px){#CookiebotWidget:not(.CookiebotWidget-inactive){bottom:10px;left:10px}#CookiebotWidget :focus-visible,#CookiebotWidget:not(.CookiebotWidget-open) .Cookiebotwidget-logo{outline:0}}@media screen and (min-width:601px){#CookiebotWidget+#CookiebotWidgetUnderlay{display:none}}</style><div style="background-color: rgb(255, 255, 255); border: 1px solid rgb(204, 204, 204); box-shadow: rgba(0, 0, 0, 0.2) 2px 2px 3px; position: absolute; transition: visibility linear 0.3s, opacity 0.3s linear; opacity: 0; visibility: hidden; z-index: 2000000000; left: 0px; top: -10000px;"><div style="width: 100%; height: 100%; position: fixed; top: 0px; left: 0px; z-index: 2000000000; background-color: rgb(255, 255, 255); opacity: 0.05;"></div><div class="g-recaptcha-bubble-arrow" style="border: 11px solid transparent; width: 0px; height: 0px; position: absolute; pointer-events: none; margin-top: -11px; z-index: 2000000000;"></div><div class="g-recaptcha-bubble-arrow" style="border: 10px solid transparent; width: 0px; height: 0px; position: absolute; pointer-events: none; margin-top: -10px; z-index: 2000000000;"></div><div style="z-index: 2000000000; position: relative;"><iframe title="recaptcha challenge expires in two minutes" name="c-ikseqx21ixgt" frameborder="0" scrolling="no" sandbox="allow-forms allow-popups allow-same-origin allow-scripts allow-top-navigation allow-modals allow-popups-to-escape-sandbox allow-storage-access-by-user-activation" src="./PostgreSQL Triggers and Stored Function Basics _ Severalnines_files/bframe.html" style="width: 100%; height: 100%;"></iframe></div></div><div style="background-color: rgb(255, 255, 255); border: 1px solid rgb(204, 204, 204); box-shadow: rgba(0, 0, 0, 0.2) 2px 2px 3px; position: absolute; transition: visibility linear 0.3s, opacity 0.3s linear; opacity: 0; visibility: hidden; z-index: 2000000000; left: 0px; top: -10000px;"><div style="width: 100%; height: 100%; position: fixed; top: 0px; left: 0px; z-index: 2000000000; background-color: rgb(255, 255, 255); opacity: 0.05;"></div><div class="g-recaptcha-bubble-arrow" style="border: 11px solid transparent; width: 0px; height: 0px; position: absolute; pointer-events: none; margin-top: -11px; z-index: 2000000000;"></div><div class="g-recaptcha-bubble-arrow" style="border: 10px solid transparent; width: 0px; height: 0px; position: absolute; pointer-events: none; margin-top: -10px; z-index: 2000000000;"></div><div style="z-index: 2000000000; position: relative;"><iframe title="recaptcha challenge expires in two minutes" name="c-bfcweaad8vf6" frameborder="0" scrolling="no" sandbox="allow-forms allow-popups allow-same-origin allow-scripts allow-top-navigation allow-modals allow-popups-to-escape-sandbox allow-storage-access-by-user-activation" src="./PostgreSQL Triggers and Stored Function Basics _ Severalnines_files/bframe(1).html" style="width: 100%; height: 100%;"></iframe></div></div>        <script type="text/javascript">
+    var _paq = _paq || [];
+
+        _paq.push(['trackEvent', 'built-in page scroll', '25%']);
+</script>
+</body><grammarly-desktop-integration data-grammarly-shadow-root="true"><template shadowrootmode="open"><style>
+      div.grammarly-desktop-integration {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+        -moz-user-select: none;
+        -webkit-user-select: none;
+        -ms-user-select:none;
+        user-select:none;
+      }
+
+      div.grammarly-desktop-integration:before {
+        content: attr(data-content);
+      }
+    </style><div aria-label="grammarly-integration" role="group" tabindex="-1" class="grammarly-desktop-integration" data-content="{&quot;mode&quot;:&quot;full&quot;,&quot;isActive&quot;:true,&quot;isUserDisabled&quot;:false}"></div></template></grammarly-desktop-integration></html>
